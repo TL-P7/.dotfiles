@@ -1,0 +1,9 @@
+[user]
+	name = TL-P7
+	email = seelesaki@gmail.com
+[init]
+	defaultBranch = main
+[http]
+        proxy = socks5://127.0.0.1:7890
+[https]
+        proxy = socks5://127.0.0.1:7890
