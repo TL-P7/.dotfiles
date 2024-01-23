@@ -1,13 +1,13 @@
 local function open_path()
   local paths = {
-    "1. /home/tlp/.dotfile/.config/nvim/",
-    "2. /home/tlp/Documents/code/cp/",
-    "3. /home/tlp/Documents/code/notes/",
+    "1. /home/tlp/.dotfiles/.config/nvim/",
+    "2. /home/tlp/Documents/cp/",
+    "3. /home/tlp/Documents/notes/",
   }
   local index = vim.fn.inputlist(paths)
 
   if index > 0 and index <= #paths then
-    vim.cmd("Joshuto " .. string.sub(paths[index], 4, string.len(paths[index])))
+    require("telescope.builtin").find_files({ cwd = string.sub(paths[index], 4, #paths[index]) })
   else
     print("Invalid selection")
   end
