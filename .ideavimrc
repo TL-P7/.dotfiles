@@ -40,6 +40,13 @@ nmap gy <action>(GotoTypeDeclaration)
 nmap <C-l> <action>(NextTab)
 nmap <C-h> <action>(PreviousTab)
 
+nmap <F11> <action>(Rerun)
+nmap <F10> <action>(RerunTests)
+
+nmap <C-f> <action>(ReformatCode) \| <action>(OptimizeImports)
+
+nmap <Esc>u :nohlsearch<CR>
+
 
 " ================================================================================================
 " = Leader Keymaps =====================================
@@ -54,69 +61,47 @@ set which-key
 set notimeout
 
 " d: diff
-nmap <leader>dd <action>(Vcs.ShowTabbedFileHistory)
 
 " f: Find/Format ⭐️
-let g:WhichKeyDesc_FindOrFormat = "<leader>f FindOrFormat"
-let g:WhichKeyDesc_FindOrFormat_FindFile = "<leader>ff FindFile"
+let g:WhichKeyDesc_Find = "<leader>f Find"
+
+let g:WhichKeyDesc_Find_FindFile = "<leader>ff FindFile"
 nmap <leader>ff <action>(GotoFile)
 
-let g:WhichKeyDesc_FindOrFormat_FindFileLocation = "<leader>fl FindFileLocation"
+let g:WhichKeyDesc_Find_FindFile = "<leader>fd Diff"
+nmap <leader>fd <action>(Vcs.ShowTabbedFileHistory)
+
+let g:WhichKeyDesc_Find_FindFileLocation = "<leader>fl FindFileLocation"
 nmap <leader>fl <action>(SelectInProjectView)
 
-let g:WhichKeyDesc_FindOrFormat_FindText = "<leader>ft FindText"
+let g:WhichKeyDesc_Find_FindText = "<leader>ft FindText"
 nmap <leader>ft <action>(FindInPath)
 
-let g:WhichKeyDesc_FindOrFormat_Commands = "<leader>fc Commands"
+let g:WhichKeyDesc_Find_Commands = "<leader>fc Commands"
 nmap <leader>fc <action>(GotoAction)
 
-let g:WhichKeyDesc_FindOrFormat_OpenedProject = "<leader>fp OpenedProject"
-nmap <leader>fp <action>(OpenProjectWindows)
+let g:WhichKeyDesc_Find_OpenedProject = "<leader>fpr OpenedProject"
+nmap <leader>fpr <action>(OpenProjectWindows)
 
-let g:WhichKeyDesc_FindOrFormat_Format = "<leader>fm Format"
-nmap <leader>fm <action>(ReformatCode) \| <action>(OptimizeImports)
+let g:WhichKeyDesc_Show_FileStructure = "<leader>fs ShowFileStructure"
+nmap <leader>fs <action>(FileStructurePopup)
+
+let g:WhichKeyDesc_Show_Bookmarks = "<leader>fb ShowBookmarks"
+nmap <leader>fb <action>(ShowBookmarks)
+
+let g:WhichKeyDesc_Show_ParameterInfo = "<leader>fpi ShowParameterInfo"
+nmap <leader>fpi <action>(ParameterInfo)
 
 " g: Git ⭐️
 let g:WhichKeyDesc_Git = "<leader>g Git"
 let g:WhichKeyDesc_Git_RollbackHunk = "<leader>gr RollbackHunk"
 nmap <leader>gr :action Vcs.RollbackChangedLines<CR>
 
-" i: Insert ⭐️
-let g:WhichKeyDesc_InsertAfterBrackets = "<leader>i InsertAfterBrackets"
-nmap <leader>i f(a
 
-" j: add Semicolon and goto nextline⭐️
-let g:WhichKeyDesc_InsertSemicolon = "<leader>j InsertSemicolon"
-nmap <leader>j A;<ESC>o
+" r: Re ⭐️
+let g:WhichKeyDesc_Rename = "<leader>rn Rename"
+nmap <leader>rn <action>(RenameElement)
 
-" l: lsp: Language server protocol (align with neovim)⭐️
-let g:WhichKeyDesc_LSP = "<leader>l LSP"
-let g:WhichKeyDesc_LSP_Rename = "<leader>lr Rename"
-nmap <leader>lr <action>(RenameElement)
-
-
-" <Esc>u: No ⭐️
-let g:WhichKeyDesc_No_Highlight = "<Esc>u NoHighlight"
-nmap <Esc>u :nohlsearch<CR>
-
-
-" f: Show ⭐️
-let g:WhichKeyDesc_Show = "<leader>f Show"
-let g:WhichKeyDesc_Show_FileStructure = "<leader>fs ShowFileStructure"
-nmap <leader>ss <action>(FileStructurePopup)
-let g:WhichKeyDesc_Show_Bookmarks = "<leader>fb ShowBookmarks"
-nmap <leader>sb <action>(ShowBookmarks)
-let g:WhichKeyDesc_Show_ParameterInfo = "<leader>fb ShowParameterInfo"
-nmap <leader>fp <action>(ParameterInfo)
-
-" r: Run/Re ⭐️
-let g:WhichKeyDesc_RunOrRe = "<leader>r RunOrRe"
-let g:WhichKeyDesc_RunOrRe_ReRun = "<leader>rr ReRun"
-nmap <leader>rr <action>(Rerun)
-let g:WhichKeyDesc_RunOrRe_ReRunTests = "<leader>rt ReRunTests"
-nmap <leader>rt <action>(RerunTests)
-let g:WhichKeyDesc_RunOrRe_Rename = "<leader>rn Rename"
-map <leader>rn <action>(RenameElement)
 
 " w: Window ⭐️
 let g:WhichKeyDesc_Windows = "<leader>w Windows"
@@ -141,12 +126,13 @@ nmap <leader>q :q!<CR>
 " m: Toggle Explorer ⭐️
 let g:WhichKeyDesc_ToggleExplorerOrExtract = "<leader>mt ToggleExplorer"
 nmap <leader>mt <action>(ActivateProjectToolWindow)
+
 " e: Extract
 " extract method/function
-vmap <leader>em <action>(ExtractMethod)
+vnoremap <leader>em <action>(ExtractMethod)
 " extract constant
-vmap <leader>ec <action>(IntroduceConstant)
+vnoremap <leader>ec <action>(IntroduceConstant)
 " extract field
-vmap <leader>ef <action>(IntroduceField)
+vnoremap <leader>ef <action>(IntroduceField)
 " extract variable
-vmap <leader>ev <action>(IntroduceVariable)
+vnoremap <leader>ev <action>(IntroduceVariable)
