@@ -8,8 +8,9 @@
     - nvim
     - picom
     - rofi
+  - .ideavimrc
   - .clang-format
-  - gitconfig
+  - .gitconfig
 ### install by
 ```bash
 cd

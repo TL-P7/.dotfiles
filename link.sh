@@ -18,6 +18,9 @@ ln -s ~/.dotfiles/.config/picom ~/.config
 rm -rf ~/.config/chadwm
 ln -s ~/.dotfiles/.config/chadwm ~/.config
 
+rm -f ~/.ideavimrc
+ln -s ~/.dotfiles/.ideavimrc ~
+
 rm -f ~/.gitconfig
 ln -s ~/.dotfiles/.gitconfig ~
 
