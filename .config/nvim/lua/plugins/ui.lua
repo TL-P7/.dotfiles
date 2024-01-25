@@ -57,9 +57,9 @@ return {
               key = "f",
             },
             {
-              desc = " bookmarks",
+              desc = " bookmarks",
               group = "DiagnosticHint",
-              action = "vim.cmd('norm <leader>op')",
+              action = "vim.cmd('norm <leader>mb')",
               key = "b",
             },
             {
