@@ -69,7 +69,7 @@ return {
         key = "d",
         },
         },
-        footer = { "What is mind? Not matter. What is matter? Never mind." },
+        footer = { "What is mind? No matter. What is matter? Never mind." },
         },
       }
     end,

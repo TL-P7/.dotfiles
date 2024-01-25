@@ -388,7 +388,7 @@ void write(T x) {
   ]], {}, { delimiters = "@$" })),
 
   s("lca", fmt([[
-template <typename T = int>
+template <class T = int>
 struct Lca {
     std::vector<std::vector<T>> adj;
     std::vector<std::vector<int>> p;
@@ -464,6 +464,51 @@ struct Lca {
     }
 };
 ]], {}, { delimiters = "@#" })),
+
+  s("fenwick_tree", fmt([[
+template <class T = ll>
+struct FenwickTree {
+    FenwickTree() : n(0) {}
+    explicit FenwickTree(int _n) : n(_n), data(n + 1) {}
+
+    void add(int p, T x) {
+        while (p <= n) {
+            data[p] += x;
+            p += p & -p;
+        }
+    }
+    T sum(int l, int r) { return sum(r) - sum(l - 1); }
+    int query(T x) {
+        int pos = 0, l = 1;
+        while (1 << l <= n) {
+            l++;
+        }
+        for (int i = l - 1; i >= 0; i--) {
+            int j = 1 << i;
+            // rightmost
+            if (pos + j <= n && data[pos + j] <= x) {
+                pos += j;
+                x -= data[pos];
+            }
+        }
+        return pos;
+    }
+
+
+private:
+    int n;
+    std::vector<T> data;
+
+    T sum(int p) {
+        T s = 0;
+        while (p) {
+            s += data[p];
+            p -= p & -p;
+        }
+        return s;
+    }
+};
+  ]], {}, { delimiters = "@$" })),
 }
 
 

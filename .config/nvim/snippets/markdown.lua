@@ -76,7 +76,7 @@ return {
     { trig = "\\int", snippetType = "autosnippet" },
     fmta(
       [[\int_{<>}^{<>}<>{\rm d}<>]],
-      { i(1), i(2), i(3), i(4, "x")},
+      { i(1), i(2), i(3), i(4, "x") },
       {}
     )
   ),
@@ -84,7 +84,7 @@ return {
     { trig = "\\sum", snippetType = "autosnippet" },
     fmta(
       [[\sum{<>}^{<>}]],
-      { i(1), i(2)},
+      { i(1), i(2) },
       {}
     )
   ),
@@ -92,6 +92,9 @@ return {
     sn(nil, { t("$"), i(1), t("$") }),
     sn(nil, { t("$$"), i(1), t("$$") }),
   })
+  ),
+  s({ trig = "\\te", snippetType = "autosnippet" },
+    { t("\\text{"), i(1), t("}") }
   ),
   s("uls", {
     t("- "), i(1), d(2, rec_uls, {}),
