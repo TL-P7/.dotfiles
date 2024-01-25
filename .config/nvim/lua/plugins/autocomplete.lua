@@ -96,7 +96,7 @@ return {
             end
           end, { "i", "s" }),
           ["<CR>"] = cmp.mapping.confirm({ select = false }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-          ["<C-Space>"] = cmp.mapping.complete(),
+          ["<C-a>"] = cmp.mapping.complete(),
           ["<C-j>"] = cmp.mapping.scroll_docs(4),
           ["<C-k>"] = cmp.mapping.scroll_docs(-4),
           ["<C-q>"] = cmp.mapping.close()
