@@ -42,34 +42,34 @@ return {
         --},
         theme = "hyper",
         config = {
-        header = vim.split(logo, "\n"),
-        week_header = {
-        enable = false,
-        },
-        shortcut = {
-        { desc = "󰊳 Update", group = "@property", action = "Lazy update", key = "u" },
-        {
-        icon = " ",
-        icon_hl = "@variable",
-        desc = "Files",
-        group = "Label",
-        action = "Telescope find_files",
-        key = "f",
-        },
-        {
-        desc = " bookmarks",
-        group = "DiagnosticHint",
-        action = "vim.cmd('norm <leader>op')",
-        key = "b",
-        },
-        {
-        desc = " dotfiles",
-        group = "Number",
-        action = "Telescope dotfiles",
-        key = "d",
-        },
-        },
-        footer = { "What is mind? No matter. What is matter? Never mind." },
+          header = vim.split(logo, "\n"),
+          week_header = {
+            enable = false,
+          },
+          shortcut = {
+            { desc = "󰊳 Update", group = "@property", action = "Lazy update", key = "u" },
+            {
+              icon = " ",
+              icon_hl = "@variable",
+              desc = "Files",
+              group = "Label",
+              action = "Telescope find_files",
+              key = "f",
+            },
+            {
+              desc = " bookmarks",
+              group = "DiagnosticHint",
+              action = "vim.cmd('norm <leader>op')",
+              key = "b",
+            },
+            {
+              desc = " dotfiles",
+              group = "Number",
+              action = "Telescope dotfiles",
+              key = "d",
+            },
+          },
+          footer = { "What is mind? No matter. What is matter? Never mind." },
         },
       }
     end,
@@ -150,5 +150,21 @@ return {
       --   If not available, we use `mini` as the fallback
       "rcarriga/nvim-notify",
     }
-  }
+  },
+  {
+    "utilyre/barbecue.nvim",
+    name = "barbecue",
+    version = "*",
+    dependencies = {
+      "SmiteshP/nvim-navic",
+      "nvim-tree/nvim-web-devicons", -- optional dependency
+    },
+    config = function()
+      -- Lua
+      require('barbecue').setup({
+        -- ... your barbecue config
+        theme = 'tokyonight',
+      })
+    end
+  },
 }
