@@ -14,6 +14,7 @@ setxkbmap -option caps:swapescape &
 xset r rate 250 30 &
 xset b off &
 cp -r ~/.config/chadwm/eww ~/.config/ &
+wmname LG3D &
 #eww open eww &
 
 dash ~/.config/chadwm/scripts/bar.sh &
