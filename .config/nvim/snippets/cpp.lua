@@ -62,6 +62,16 @@ return {
     }
   ]], { i(1) }, { delimiters = "@$" })),
 
+  s("bit_ceil", fmt([[
+unsigned int bit_ceil(unsigned int n) {
+    unsigned int x = 1;
+    while (x < (unsigned int)(n)) {
+        x *= 2;
+    }
+    return x;
+}
+  ]], {}, { delimiters = "@$" })),
+
   s("z_algorithm", fmt([[
     // one-base
     std::string s = " " + b + "#" + a;
@@ -180,15 +190,17 @@ struct OEdges {
   ]], {}, { delimiters = "@$" })),
 
   s("dsu", fmta([[
-template <typename T>
 struct Dsu {
-    std::vector<T> p;
-    Dsu(T n) : p(n + 1, -1) {}
-    T root(T x) { return p[x] < 0 ? x : p[x] = root(p[x]); }
-    bool merge(T x, T y) {
+    Dsu() : n(0) {}
+    explicit Dsu(int _n) : n(_n), p(_n + 1, -1) {}
+
+
+    int root(int x) { return p[x] < 0 ? x : p[x] = root(p[x]); }
+    // return the root for next merge
+    int merge(int x, int y) {
         x = root(x), y = root(y);
         if (x == y) {
-            return false;
+            return x;
         }
         // size_y > size_x
         if (p[x] > p[y]) {
@@ -197,10 +209,13 @@ struct Dsu {
         // merge y to x
         p[x] += p[y];
         p[y] = x;
-        return true;
+        return x;
     }
-    bool same(T x, T y) { return root(x) == root(y); }
-    T size(T x) { return -p[root(x)]; }
+    bool same(int x, int y) { return root(x) == root(y); }
+    int size(int x) { return -p[root(x)]; }
+private:
+    int n;
+    std::vector<int> p;
 };
   ]], {}, { delimiters = "@$" })),
 
@@ -509,6 +524,194 @@ private:
     }
 };
   ]], {}, { delimiters = "@$" })),
+
+  s("segtree", fmt([[
+template <class T>
+struct Segtree {
+    Segtree() : n(0) {}
+    explicit Segtree(int _n) : n(_n) {
+        size = bit_ceil(n);
+        log = __builtin_ctz(size);
+        d = std::vector<T>(size * 2);
+    }
+    // one-base
+    explicit Segtree(int _n, std::vector<T> &a) : n(_n) {
+        size = bit_ceil(n);
+        log = __builtin_ctz(size);
+        d = std::vector<T>(size * 2);
+        build(a);
+    }
+
+    void build(std::vector<T> &a) { build(a, 1, 1, n); }
+    void build(std::vector<T> &a, int id, int l, int r) {
+        if (l == r) {
+            d[id] = a[l];
+            return;
+        }
+        int m = (l + r) / 2;
+        build(a, id * 2, l, m);
+        build(a, id * 2 + 1, m + 1, r);
+        update(id);
+    }
+    void set(int p, T val) { set(p, val, 1, 1, n); }
+    void set(int p, T val, int id, int l, int r) {
+        if (l == r) {
+            d[id] = val;
+            return;
+        }
+        int m = (l + r) / 2;
+        if (p <= m) {
+            set(p, val, id * 2, l, m);
+        } else {
+            set(p, val, id * 2 + 1, m + 1, r);
+        }
+        update(id);
+    }
+    T query(int ql, int qr) const { return query(ql, qr, 1, 1, n); }
+    T query(int ql, int qr, int id, int l, int r) const {
+        if (l == ql && r == qr) {
+            return d[id];
+        }
+        int m = (l + r) / 2;
+        if (qr <= m) {
+            return query(ql, qr, id * 2, l, m);
+        } else if (ql > m) {
+            return query(ql, qr, id * 2 + 1, m + 1, r);
+        } else {
+            return op(query(ql, m, id * 2, l, m),
+                      query(m + 1, qr, id * 2 + 1, m + 1, r));
+        }
+    }
+
+private:
+    int n, size, log;
+    std::vector<T> d;
+    unsigned int bit_ceil(unsigned int n) {
+        unsigned int x = 1;
+        while (x < (unsigned int)(n)) {
+            x *= 2;
+        }
+        return x;
+    }
+    void update(int p) { d[p] = op(d[p * 2], d[p * 2 + 1]); }
+    T op(T lhs, T rhs) const { return lhs + rhs; }
+};
+  ]], {}, { delimiters = "@$" })),
+
+  s("lazy_segtree", fmt([[
+template <class T, class S>
+struct LazySegtree {
+    LazySegtree() : n(0) {}
+    explicit LazySegtree(int _n) : n(_n) {
+        size = bit_ceil(n);
+        log = __builtin_ctz(size);
+        d = std::vector<T>(size * 2);
+        sz = std::vector<int>(size * 2);
+        lz = std::vector<S>(size * 2);
+    }
+    // one-base
+    explicit LazySegtree(int _n, std::vector<T> &a) : n(_n) {
+        size = bit_ceil(n);
+        log = __builtin_ctz(size);
+        d = std::vector<T>(size * 2);
+        sz = std::vector<int>(size * 2);
+        lz = std::vector<S>(size * 2);
+        build(a);
+    }
+
+    void build(std::vector<T> &a) { build(a, 1, 1, n); }
+    void build(std::vector<T> &a, int id, int l, int r) {
+        sz[id] = r - l + 1;
+        if (l == r) {
+            d[id] = a[l];
+            return;
+        }
+        int m = (l + r) / 2;
+        build(a, id * 2, l, m);
+        build(a, id * 2 + 1, m + 1, r);
+        update(id);
+    }
+
+    void set(int p, T val) { set(p, val, 1, 1, n); }
+    void set(int p, T val, int id, int l, int r) {
+        if (l == r) {
+            d[id] = val;
+            return;
+        }
+        int m = (l + r) / 2;
+        if (p <= m) {
+            set(p, val, id * 2, l, m);
+        } else {
+            set(p, val, id * 2 + 1, m + 1, r);
+        }
+        update(id);
+    }
+
+    void modify(int ml, int mr, T x) { modify(ml, mr, x, 1, 1, n); }
+    void modify(int ml, int mr, T x, int id, int l, int r) {
+        if (l == ml && r == mr) {
+            apply(id, x);
+            return;
+        }
+        push(id);
+        int m = (l + r) / 2;
+        if (mr <= m) {
+            modify(ml, mr, x, id * 2, l, m);
+        } else if (ml > m) {
+            modify(ml, mr, x, id * 2 + 1, m + 1, r);
+        } else {
+            modify(ml, m, x, id * 2, l, m);
+            modify(m + 1, mr, x, id * 2 + 1, m + 1, r);
+        }
+        update(id);
+    }
+
+    T query(int ql, int qr) { return query(ql, qr, 1, 1, n); }
+    T query(int ql, int qr, int id, int l, int r) {
+        if (l == ql && r == qr) {
+            return d[id];
+        }
+        push(id);
+        int m = (l + r) / 2;
+        if (qr <= m) {
+            return query(ql, qr, id * 2, l, m);
+        } else if (ql > m) {
+            return query(ql, qr, id * 2 + 1, m + 1, r);
+        } else {
+            return op(query(ql, m, id * 2, l, m),
+                      query(m + 1, qr, id * 2 + 1, m + 1, r));
+        }
+    }
+
+private:
+    int n, size, log;
+    std::vector<T> d;
+    std::vector<int> sz;
+    std::vector<S> lz;
+    unsigned int bit_ceil(unsigned int n) {
+        unsigned int x = 1;
+        while (x < (unsigned int)(n)) {
+            x *= 2;
+        }
+        return x;
+    }
+    void update(int p) { d[p] = op(d[p * 2], d[p * 2 + 1]); }
+    T op(T lhs, T rhs) { return lhs + rhs; }
+
+    void apply(int id, S tag) {
+        d[id] += tag * sz[id];
+        lz[id] += tag;
+    }
+    void push(int id) {
+        if (lz[id]) {
+            apply(id * 2, lz[id]);
+            apply(id * 2 + 1, lz[id]);
+            lz[id] = 0;
+        }
+    }
+};
+  ]], {}, {delimiters = "@$"}))
+
 }
 
 
