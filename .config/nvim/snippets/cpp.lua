@@ -647,8 +647,8 @@ struct LazySegtree {
         update(id);
     }
 
-    void modify(int ml, int mr, T x) { modify(ml, mr, x, 1, 1, n); }
-    void modify(int ml, int mr, T x, int id, int l, int r) {
+    void modify(int ml, int mr, S x) { modify(ml, mr, x, 1, 1, n); }
+    void modify(int ml, int mr, S x, int id, int l, int r) {
         if (l == ml && r == mr) {
             apply(id, x);
             return;
@@ -695,7 +695,7 @@ private:
         }
         return x;
     }
-    void update(int p) { d[p] = op(d[p * 2], d[p * 2 + 1]); }
+    void update(int id) { d[id] = op(d[id * 2], d[id * 2 + 1]); }
     T op(T lhs, T rhs) { return lhs + rhs; }
 
     void apply(int id, S tag) {
