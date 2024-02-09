@@ -34,7 +34,6 @@ return {
         std::cin.tie(nullptr);
 
         @$
-        return 0;
     }
   ]], { i(1) }, { delimiters = "@$" })),
 
@@ -58,7 +57,6 @@ return {
         while (t--) {
             solve();
         }
-        return 0;
     }
   ]], { i(1) }, { delimiters = "@$" })),
 
@@ -169,47 +167,71 @@ unsigned int bit_ceil(unsigned int n) {
     i = std::min(i, j);
     ]], {}, { delimiters = "@$" })),
 
-  s("directed_graph", fmta([[
-template <typename T>
+  s("noweight_graph", fmta([[
 struct Graph {
-    int N;
-    std::vector<std::vector<T>> adj;
-    Graph(T n) : N(n), adj(n + 1) {}
-    void add_edge(T u, T v) { adj[u].emplace_back(v); }
+    explicit Graph(int _n) : n(_n), adj(_n + 1) {}
+    void add_edge(int u, int v) { adj[u].emplace_back(v); }
+    void add_edges(int u, int v) {
+        adj[u].emplace_back(v);
+        adj[v].emplace_back(u);
+    }
+    std::vector<std::vector<int>> adj;
+    int n;
+};
+  ]], {}, { delimiters = "@$" })),
+
+  s("weight_graph", fmta([[
+template <class T>
+struct Graph {
+    explicit Graph(int _n) : n(_n), adj(_n + 1), wgt(_n + 1) {}
+    void add_edge(int u, int v, T w) {
+        adj[u].emplace_back(v);
+        wgt[u].emplace_back(w);
+    }
+    void add_edges(int u, int v, T w) {
+        adj[u].emplace_back(v);
+        wgt[u].emplace_back(w);
+        adj[v].emplace_back(u);
+        wgt[v].emplace_back(w);
+    }
+    std::vector<std::vector<int>> adj;
+    std::vector<std::vector<T>> wgt;
+    int n;
 };
   ]], {}, { delimiters = "@$" })),
 
   s("ordered_edges", fmta([[
-template <typename T>
+template <class T>
 struct OEdges {
     int W;
     std::vector<std::vector<PII>> edges;
-    OEdges(T maxWeight) : W(maxWeight), edges(maxWeight + 1) {}
+    explicit OEdges(T maxWeight) : W(maxWeight), edges(maxWeight + 1) {}
     void add_edge(T weight, int u, int v) { edges[weight].push_back({u, v}); }
 };
   ]], {}, { delimiters = "@$" })),
 
   s("dsu", fmta([[
 struct Dsu {
-    Dsu() : n(0) {}
+    explicit Dsu() : n(0) {}
     explicit Dsu(int _n) : n(_n), p(_n + 1, -1) {}
 
 
     int root(int x) { return p[x] < 0 ? x : p[x] = root(p[x]); }
     // return the root for next merge
     int merge(int x, int y) {
-        x = root(x), y = root(y);
-        if (x == y) {
-            return x;
+        int rx = root(x), ry = root(y);
+        if (rx == ry) {
+            return rx;
         }
-        // size_y > size_x
-        if (p[x] > p[y]) {
+        // size_ry > size_rx
+        if (p[rx] > p[ry]) {
+            std::swap(rx, ry);
             std::swap(x, y);
         }
-        // merge y to x
-        p[x] += p[y];
-        p[y] = x;
-        return x;
+        // merge ry to rx
+        p[rx] += p[ry];
+        p[ry] = rx;
+        return rx;
     }
     bool same(int x, int y) { return root(x) == root(y); }
     int size(int x) { return -p[root(x)]; }
@@ -259,17 +281,40 @@ struct BinaryTree {
   ]], {}, { delimiters = "@$" })),
 
   s("modint", fmt([[
+
 constexpr int mod = @$;
 struct Mint {
 public:
-    Mint(ll _x) : x(_x % mod) {
+    explicit Mint(ll _x) : x(_x % mod) {
         if (x < 0) {
             x += mod;
         }
     }
-    Mint() = default;
+    explicit Mint() : x(0) {}
     Mint operator-() { return Mint(-x); }
     Mint operator+() { return Mint(x); }
+    Mint &operator++() {
+        if ((x += 1) == mod) {
+            x = 0;
+        }
+        return *this;
+    }
+    Mint operator++(int) {
+        Mint pmt = *this;
+        ++*this;
+        return pmt;
+    }
+    Mint &operator--() {
+        if ((x -= 1) < 0) {
+            x += mod;
+        }
+        return *this;
+    }
+    Mint operator--(int) {
+        Mint pmt = *this;
+        --*this;
+        return pmt;
+    }
     Mint &operator+=(const Mint &rhs) {
         if ((x += rhs.x) >= mod) {
             x -= mod;
@@ -277,15 +322,13 @@ public:
         return *this;
     }
     Mint &operator-=(const Mint &rhs) {
-        x -= rhs.x;
-        if (x < 0) {
+        if ((x -= rhs.x) < 0) {
             x += mod;
         }
         return *this;
     }
     Mint &operator*=(const Mint &rhs) {
-        x = x * rhs.x % mod;
-        if (x < 0) {
+        if ((x = x * rhs.x % mod) < 0) {
             x += mod;
         }
         return *this;
@@ -303,28 +346,39 @@ public:
         return *this;
     }
     Mint &operator*=(const ll rhs) {
-        (x *= rhs) %= mod;
+        if ((x = x * rhs % mod) < 0) {
+            x += mod;
+        }
         return *this;
     }
     Mint &operator/=(const Mint &rhs) { return *this *= rhs.inv(); }
 
+    Mint &operator=(const ll rhs) {
+        *this = Mint(rhs);
+        return *this;
+    }
+
     // the same as std::vector v2(v1)
-    Mint operator+(const Mint rhs) { return Mint(*this) += rhs; }
-    Mint operator-(const Mint rhs) { return Mint(*this) -= rhs; }
-    Mint operator*(const Mint rhs) { return Mint(*this) *= rhs; }
-    Mint operator/(const Mint rhs) { return Mint(*this) /= rhs; }
-    Mint operator+(const ll rhs) { return Mint(*this) += rhs; }
-    Mint operator-(const ll rhs) { return Mint(*this) -= rhs; }
-    Mint operator*(const ll rhs) { return Mint(*this) *= rhs; }
-    Mint operator/(const ll rhs) { return Mint(*this) / Mint(rhs); }
-    bool operator>(const ll rhs) { return x > rhs; }
-    bool operator<(const ll rhs) { return x < rhs; }
-    bool operator==(const ll rhs) { return x == rhs; }
-    bool operator!=(const ll rhs) { return x != rhs; }
-    bool operator>(const Mint rhs) { return x > rhs.x; }
-    bool operator<(const Mint rhs) { return x < rhs.x; }
-    bool operator==(const Mint rhs) { return x == rhs.x; }
-    bool operator!=(const Mint rhs) { return x != rhs.x; }
+    Mint operator+(const Mint rhs) const { return Mint(*this) += rhs; }
+    Mint operator-(const Mint rhs) const { return Mint(*this) -= rhs; }
+    Mint operator*(const Mint rhs) const { return Mint(*this) *= rhs; }
+    Mint operator/(const Mint rhs) const { return Mint(*this) /= rhs; }
+    Mint operator+(const ll rhs) const { return Mint(*this) += rhs; }
+    Mint operator-(const ll rhs) const { return Mint(*this) -= rhs; }
+    Mint operator*(const ll rhs) const { return Mint(*this) *= rhs; }
+    Mint operator/(const ll rhs) const { return Mint(*this) / Mint(rhs); }
+    bool operator>(const ll rhs) const { return x > rhs; }
+    bool operator>=(const ll rhs) const { return x >= rhs; }
+    bool operator<(const ll rhs) const { return x < rhs; }
+    bool operator<=(const ll rhs) const { return x <= rhs; }
+    bool operator==(const ll rhs) const { return x == rhs; }
+    bool operator!=(const ll rhs) const { return x != rhs; }
+    bool operator>(const Mint rhs) const { return x > rhs.x; }
+    bool operator>=(const Mint rhs) const { return x >= rhs.x; }
+    bool operator<(const Mint rhs) const { return x < rhs.x; }
+    bool operator<=(const Mint rhs) const { return x <= rhs.x; }
+    bool operator==(const Mint rhs) const { return x == rhs.x; }
+    bool operator!=(const Mint rhs) const { return x != rhs.x; }
 
     Mint pow(ll times) const {
         Mint t(*this);
@@ -710,13 +764,13 @@ private:
         }
     }
 };
-  ]], {}, {delimiters = "@$"}))
+  ]], {}, { delimiters = "@$" }))
 
 }
 
 
---snippet qmi quick pow
---    ll qmi(ll a, ll b) {
+--snippet qpow quick pow
+--    ll qpow(ll a, ll b) {
 --        ll res = 1;
 --        while (b) {
 --            if (b & 1) {
@@ -729,8 +783,8 @@ private:
 --    }
 --
 --
---snippet qmip quick pow with p
---    ll qmi(ll a, ll b, ll p) {
+--snippet qpowp quick pow with p
+--    ll qpow(ll a, ll b, ll p) {
 --        ll res = 1;
 --        while (b) {
 --            if (b & 1) {
@@ -742,8 +796,8 @@ private:
 --        return res;
 --    }
 --
---snippet qminop quick pow without p
---    ll qmi(ll a, ll b) {
+--snippet qpownop quick pow without p
+--    ll qpow(ll a, ll b) {
 --        ll res = 1;
 --        while (b) {
 --            if (b & 1) {
