@@ -281,22 +281,15 @@ struct BinaryTree {
   ]], {}, { delimiters = "@$" })),
 
   s("modint", fmt([[
-
-constexpr int mod = @$;
+template<ll _mod>
 struct Mint {
 public:
-    explicit Mint(ll _x) : x(_x % mod) {
-        if (x < 0) {
-            x += mod;
-        }
-    }
-    explicit Mint() : x(0) {}
-    Mint operator-() { return Mint(-x); }
-    Mint operator+() { return Mint(x); }
+    Mint(ll x) : _x(x % _mod) { norm(x); }
+    explicit Mint() : _x(0) {}
+    Mint operator-() { return Mint(-_x); }
+    Mint operator+() { return Mint(_x); }
     Mint &operator++() {
-        if ((x += 1) == mod) {
-            x = 0;
-        }
+        norm(_x += 1);
         return *this;
     }
     Mint operator++(int) {
@@ -305,9 +298,7 @@ public:
         return pmt;
     }
     Mint &operator--() {
-        if ((x -= 1) < 0) {
-            x += mod;
-        }
+        norm(_x -= 1);
         return *this;
     }
     Mint operator--(int) {
@@ -316,47 +307,39 @@ public:
         return pmt;
     }
     Mint &operator+=(const Mint &rhs) {
-        if ((x += rhs.x) >= mod) {
-            x -= mod;
-        }
+        norm(_x += rhs._x);
         return *this;
     }
     Mint &operator-=(const Mint &rhs) {
-        if ((x -= rhs.x) < 0) {
-            x += mod;
-        }
+        norm(_x -= rhs._x);
         return *this;
     }
     Mint &operator*=(const Mint &rhs) {
-        if ((x = x * rhs.x % mod) < 0) {
-            x += mod;
-        }
+        norm(_x = _x * rhs._x % _mod);
         return *this;
     }
+    Mint &operator/=(const Mint &rhs) { return *this *= rhs.inv(); }
+
     Mint &operator+=(const ll &rhs) {
-        if ((x += rhs) >= mod) {
-            x -= mod;
+        if ((_x += rhs) >= _mod) {
+            _x -= _mod;
         }
         return *this;
     }
     Mint &operator-=(const ll rhs) {
-        if ((x += (mod - rhs)) >= mod) {
-            x -= mod;
-        }
+        norm((_x += (_mod - rhs)));
         return *this;
     }
     Mint &operator*=(const ll rhs) {
-        if ((x = x * rhs % mod) < 0) {
-            x += mod;
-        }
+        norm(_x = _x * rhs % _mod);
         return *this;
     }
-    Mint &operator/=(const Mint &rhs) { return *this *= rhs.inv(); }
 
     Mint &operator=(const ll rhs) {
         *this = Mint(rhs);
         return *this;
     }
+    Mint &operator/=(const ll &rhs) { return *this *= Mint(rhs).inv(); }
 
     // the same as std::vector v2(v1)
     Mint operator+(const Mint rhs) const { return Mint(*this) += rhs; }
@@ -367,18 +350,18 @@ public:
     Mint operator-(const ll rhs) const { return Mint(*this) -= rhs; }
     Mint operator*(const ll rhs) const { return Mint(*this) *= rhs; }
     Mint operator/(const ll rhs) const { return Mint(*this) / Mint(rhs); }
-    bool operator>(const ll rhs) const { return x > rhs; }
-    bool operator>=(const ll rhs) const { return x >= rhs; }
-    bool operator<(const ll rhs) const { return x < rhs; }
-    bool operator<=(const ll rhs) const { return x <= rhs; }
-    bool operator==(const ll rhs) const { return x == rhs; }
-    bool operator!=(const ll rhs) const { return x != rhs; }
-    bool operator>(const Mint rhs) const { return x > rhs.x; }
-    bool operator>=(const Mint rhs) const { return x >= rhs.x; }
-    bool operator<(const Mint rhs) const { return x < rhs.x; }
-    bool operator<=(const Mint rhs) const { return x <= rhs.x; }
-    bool operator==(const Mint rhs) const { return x == rhs.x; }
-    bool operator!=(const Mint rhs) const { return x != rhs.x; }
+    bool operator>(const ll rhs) const { return _x > rhs; }
+    bool operator>=(const ll rhs) const { return _x >= rhs; }
+    bool operator<(const ll rhs) const { return _x < rhs; }
+    bool operator<=(const ll rhs) const { return _x <= rhs; }
+    bool operator==(const ll rhs) const { return _x == rhs; }
+    bool operator!=(const ll rhs) const { return _x != rhs; }
+    bool operator>(const Mint rhs) const { return _x > rhs._x; }
+    bool operator>=(const Mint rhs) const { return _x >= rhs._x; }
+    bool operator<(const Mint rhs) const { return _x < rhs._x; }
+    bool operator<=(const Mint rhs) const { return _x <= rhs._x; }
+    bool operator==(const Mint rhs) const { return _x == rhs._x; }
+    bool operator!=(const Mint rhs) const { return _x != rhs._x; }
 
     Mint pow(ll times) const {
         Mint t(*this);
@@ -393,9 +376,9 @@ public:
         return ans;
     }
 
-    // Mint inv() const { return this->pow(mod - 2); }
+    // mint inv() const { return this->pow(mod - 2); }
     Mint inv() const {
-        ll a = x, b = mod, u = 1, v = 0;
+        ll a = _x, b = _mod, u = 1, v = 0;
         while (b) {
             ll t = a / b;
             a -= t * b, std::swap(a, b);
@@ -404,26 +387,91 @@ public:
         return Mint(u);
     }
     friend std::istream &operator>>(std::istream &is, Mint &mint) {
-        is >> mint.x;
-        mint.x %= mod;
-        if (mint.x < 0) {
-            mint.x += mod;
-        }
+        is >> mint._x;
+        norm(mint._x %= _mod);
         return is;
     }
     friend std::ostream &operator<<(std::ostream &os, const Mint &mint) {
-        return os << mint.x;
+        return os << mint._x;
     }
 
 private:
-    ll x;
+    ll _x;
+    static ll norm(ll &x) {
+        if (x < 0) {
+            x += _mod;
+        } else if (x >= _mod) {
+            x -= _mod;
+        }
+        return x;
+    }
 };
+constexpr int mod = @$;
+using Z = Mint<mod>;
 ]], { i(1, "998244353") }, { delimiters = "@$" })),
 
+  s("comb", fmt([[
+struct Comb {
+    Comb() : _n(0), _fac{1}, _inv{0}, _facinv{1} {};
+    Comb(int n) : Comb() {
+        init(n);
+    }
+
+    Z fac(int n) {
+        if (n > _n) {
+            init(n);
+        }
+        return _fac[n];
+    }
+    Z inv(int n) {
+        if (n > _n) {
+            init(n);
+        }
+        return _inv[n];
+    }
+    Z facinv(int n) {
+        if (n > _n) {
+            init(n);
+        }
+        return _facinv[n];
+    }
+
+    void init(int n) {
+        if (n < _n) {
+            return;
+        }
+        n = std::min(n, static_cast<int>(Z::mod() - 1));
+        _fac.resize(n + 1);
+        _inv.resize(n + 1);
+        _facinv.resize(n + 1);
+        for (int i = _n + 1; i <= n; i++) {
+            _fac[i] = _fac[i - 1] * i;
+        }
+        _facinv[n] = _fac[n].inv();
+        for (int i = n; i > _n; i--) {
+            _facinv[i - 1] = _facinv[i] * i;
+            _inv[i] = _facinv[i] * _fac[i - 1];
+        }
+        _n = n;
+    }
+    Z binom(int n, int k) {
+        assert(_n >= n && n >= k && k >= 0);
+        init(n);
+        return _fac[n] * _facinv[n] * _facinv[n - k];
+    }
+
+private:
+    int _n;
+    std::vector<Z> _fac;
+    std::vector<Z> _inv;
+    std::vector<Z> _facinv;
+};
+  ]], {}, { delimiters = "@$" })),
+
   s("rw", fmt([[
-template <typename T>
-T read() {
-    T x = 0;
+template <typename t>
+t read() {
+    t x = 0;
     char sign = 1;
     char ch = std::cin.get();
     while (!isdigit(ch)) {
@@ -439,8 +487,8 @@ T read() {
     return sign * x;
 }
 
-template <typename T>
-void write(T x) {
+template <typename t>
+void write(t x) {
     if (x < 0) {
         std::cout << '-';
         x *= -1;
@@ -683,21 +731,6 @@ struct LazySegtree {
         int m = (l + r) / 2;
         build(a, id * 2, l, m);
         build(a, id * 2 + 1, m + 1, r);
-        update(id);
-    }
-
-    void set(int p, T val) { set(p, val, 1, 1, n); }
-    void set(int p, T val, int id, int l, int r) {
-        if (l == r) {
-            d[id] = val;
-            return;
-        }
-        int m = (l + r) / 2;
-        if (p <= m) {
-            set(p, val, id * 2, l, m);
-        } else {
-            set(p, val, id * 2 + 1, m + 1, r);
-        }
         update(id);
     }
 
