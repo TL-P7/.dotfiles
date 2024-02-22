@@ -16,6 +16,11 @@ set clipboard+=unnamed
 set scrolloff=30
 set history=200
 
+set noerrorbellsset
+set visualbell
+
+setlocal noswapfile
+
 set number
 set relativenumber
 
