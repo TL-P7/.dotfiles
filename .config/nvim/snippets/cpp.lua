@@ -280,14 +280,141 @@ struct BinaryTree {
 };
   ]], {}, { delimiters = "@$" })),
 
-  s("modint", fmt([[
-template<ll _mod>
+  s("static_modint", fmt([[
+template <ll _mod>
 struct Mint {
 public:
     Mint(ll x) : _x(x % _mod) { norm(x); }
     explicit Mint() : _x(0) {}
-    Mint operator-() { return Mint(-_x); }
-    Mint operator+() { return Mint(_x); }
+
+    static ll getmod() {
+        return _mod;
+    }
+
+    constexpr ll val() const {
+        return _x;
+    }
+
+    constexpr Mint operator-() { return Mint(-_x); }
+    constexpr Mint operator+() { return Mint(_x); }
+    constexpr Mint &operator++() {
+        norm(_x += 1);
+        return *this;
+    }
+    constexpr Mint operator++(int) {
+        Mint pmt = *this;
+        ++*this;
+        return pmt;
+    }
+    constexpr Mint &operator--() {
+        norm(_x -= 1);
+        return *this;
+    }
+    constexpr Mint operator--(int) {
+        Mint pmt = *this;
+        --*this;
+        return pmt;
+    }
+    constexpr Mint &operator+=(const Mint &rhs) {
+        norm(_x += rhs._x);
+        return *this;
+    }
+    constexpr Mint &operator-=(const Mint &rhs) {
+        norm(_x -= rhs._x);
+        return *this;
+    }
+    constexpr Mint &operator*=(const Mint &rhs) {
+        norm(_x = _x * rhs._x % _mod);
+        return *this;
+    }
+    constexpr Mint &operator/=(const Mint &rhs) { return *this *= rhs.inv(); }
+
+    // the same as std::vector v2(v1)
+    friend constexpr Mint operator+(const Mint lhs, const Mint rhs) {
+        return Mint(lhs) += rhs;
+    }
+    friend constexpr Mint operator-(const Mint lhs, const Mint rhs) {
+        return Mint(lhs) -= rhs;
+    }
+    friend constexpr Mint operator*(const Mint lhs, const Mint rhs) {
+        return Mint(lhs) *= rhs;
+    }
+    friend constexpr Mint operator/(const Mint lhs, const Mint rhs) {
+        return Mint(lhs) /= rhs;
+    }
+    friend constexpr bool operator>(const Mint lhs, const Mint rhs) {
+        return lhs._x > rhs._x;
+    }
+    friend constexpr bool operator>=(const Mint lhs, const Mint rhs) {
+        return lhs._x >= rhs._x;
+    }
+    friend constexpr bool operator<(const Mint lhs, const Mint rhs) {
+        return lhs._x < rhs._x;
+    }
+    friend constexpr bool operator<=(const Mint lhs, const Mint rhs) {
+        return lhs._x <= rhs._x;
+    }
+    friend constexpr bool operator==(const Mint lhs, const Mint rhs) {
+        return lhs._x == rhs._x;
+    }
+    friend constexpr bool operator!=(const Mint lhs, const Mint rhs) {
+        return lhs._x != rhs._x;
+    }
+
+    Mint pow(ll times) const {
+        Mint t(*this);
+        Mint ans(1);
+        while (times) {
+            if (times & 1) {
+                ans *= t;
+            }
+            t *= t;
+            times >>= 1;
+        }
+        return ans;
+    }
+
+    Mint inv() const { return this->pow(mod - 2); }
+    friend constexpr std::istream &operator>>(std::istream &is, Mint &mint) {
+        is >> mint._x;
+        norm(mint._x %= _mod);
+        return is;
+    }
+    friend constexpr std::ostream &operator<<(std::ostream &os, const Mint &mint) {
+        return os << mint._x;
+    }
+
+private:
+    ll _x;
+    static ll norm(ll &x) {
+        if (x < 0) {
+            x += _mod;
+        } else if (x >= _mod) {
+            x -= _mod;
+        }
+        return x;
+    }
+};
+
+constexpr int mod = @$;
+using Z = Mint<mod>;
+]], { i(1, "998244353") }, { delimiters = "@$" })),
+
+  s("dynamic_modint", fmt([[
+struct Mint {
+public:
+    Mint(ll x) : _x(x % _mod) { norm(_x); }
+    Mint(ll x, ll mod) : _x(x) { _mod = mod, norm(x %= mod); }
+    explicit Mint() : _x(0) {}
+
+    static ll _mod;
+    static ll getmod() { return _mod; }
+    static void setmod(ll mod) { _mod = mod; }
+
+    ll val() const { return _x; }
+
+    Mint operator-() const { return Mint(-_x); }
+    Mint operator+() const { return Mint(_x); }
     Mint &operator++() {
         norm(_x += 1);
         return *this;
@@ -320,48 +447,37 @@ public:
     }
     Mint &operator/=(const Mint &rhs) { return *this *= rhs.inv(); }
 
-    Mint &operator+=(const ll &rhs) {
-        if ((_x += rhs) >= _mod) {
-            _x -= _mod;
-        }
-        return *this;
-    }
-    Mint &operator-=(const ll rhs) {
-        norm((_x += (_mod - rhs)));
-        return *this;
-    }
-    Mint &operator*=(const ll rhs) {
-        norm(_x = _x * rhs % _mod);
-        return *this;
-    }
-
-    Mint &operator=(const ll rhs) {
-        *this = Mint(rhs);
-        return *this;
-    }
-    Mint &operator/=(const ll &rhs) { return *this *= Mint(rhs).inv(); }
-
     // the same as std::vector v2(v1)
-    Mint operator+(const Mint rhs) const { return Mint(*this) += rhs; }
-    Mint operator-(const Mint rhs) const { return Mint(*this) -= rhs; }
-    Mint operator*(const Mint rhs) const { return Mint(*this) *= rhs; }
-    Mint operator/(const Mint rhs) const { return Mint(*this) /= rhs; }
-    Mint operator+(const ll rhs) const { return Mint(*this) += rhs; }
-    Mint operator-(const ll rhs) const { return Mint(*this) -= rhs; }
-    Mint operator*(const ll rhs) const { return Mint(*this) *= rhs; }
-    Mint operator/(const ll rhs) const { return Mint(*this) / Mint(rhs); }
-    bool operator>(const ll rhs) const { return _x > rhs; }
-    bool operator>=(const ll rhs) const { return _x >= rhs; }
-    bool operator<(const ll rhs) const { return _x < rhs; }
-    bool operator<=(const ll rhs) const { return _x <= rhs; }
-    bool operator==(const ll rhs) const { return _x == rhs; }
-    bool operator!=(const ll rhs) const { return _x != rhs; }
-    bool operator>(const Mint rhs) const { return _x > rhs._x; }
-    bool operator>=(const Mint rhs) const { return _x >= rhs._x; }
-    bool operator<(const Mint rhs) const { return _x < rhs._x; }
-    bool operator<=(const Mint rhs) const { return _x <= rhs._x; }
-    bool operator==(const Mint rhs) const { return _x == rhs._x; }
-    bool operator!=(const Mint rhs) const { return _x != rhs._x; }
+    friend Mint operator+(const Mint lhs, const Mint rhs) {
+        return Mint(lhs) += rhs;
+    }
+    friend Mint operator-(const Mint lhs, const Mint rhs) {
+        return Mint(lhs) -= rhs;
+    }
+    friend Mint operator*(const Mint lhs, const Mint rhs) {
+        return Mint(lhs) *= rhs;
+    }
+    friend Mint operator/(const Mint lhs, const Mint rhs) {
+        return Mint(lhs) /= rhs;
+    }
+    friend bool operator>(const Mint lhs, const Mint rhs) {
+        return lhs._x > rhs._x;
+    }
+    friend bool operator>=(const Mint lhs, const Mint rhs) {
+        return lhs._x >= rhs._x;
+    }
+    friend bool operator<(const Mint lhs, const Mint rhs) {
+        return lhs._x < rhs._x;
+    }
+    friend bool operator<=(const Mint lhs, const Mint rhs) {
+        return lhs._x <= rhs._x;
+    }
+    friend bool operator==(const Mint lhs, const Mint rhs) {
+        return lhs._x == rhs._x;
+    }
+    friend bool operator!=(const Mint lhs, const Mint rhs) {
+        return lhs._x != rhs._x;
+    }
 
     Mint pow(ll times) const {
         Mint t(*this);
@@ -376,16 +492,8 @@ public:
         return ans;
     }
 
-    // mint inv() const { return this->pow(mod - 2); }
-    Mint inv() const {
-        ll a = _x, b = _mod, u = 1, v = 0;
-        while (b) {
-            ll t = a / b;
-            a -= t * b, std::swap(a, b);
-            u -= t * v, std::swap(u, v);
-        }
-        return Mint(u);
-    }
+    Mint inv() const { return this->pow(getmod() - 2); }
+
     friend std::istream &operator>>(std::istream &is, Mint &mint) {
         is >> mint._x;
         norm(mint._x %= _mod);
@@ -406,9 +514,225 @@ private:
         return x;
     }
 };
-constexpr int mod = @$;
-using Z = Mint<mod>;
-]], { i(1, "998244353") }, { delimiters = "@$" })),
+
+using Z = Mint;
+ll Z::_mod;
+ll mod;
+]], {}, { delimiters = "@$" })),
+  s("matrix", fmt([[
+template <class T = int>
+struct Matrix {
+    Matrix() : _r(0), _c(0) {}
+    explicit Matrix(int r, int c, std::vector<std::vector<T>> &m)
+        : _r(r), _c(c), _m(m) {}
+
+    explicit Matrix(int n) : Matrix(n, n) {}
+    explicit Matrix(int r, int c) : _r(r), _c(c) {
+        _m = std::vector<std::vector<T>>(r, std::vector<T>(c));
+    }
+    explicit Matrix(std::vector<std::vector<T>> &m) : _m(m) {
+        assert(m.size() > 0 && m[0].size() > 0);
+        _r = m.size();
+        _c = m[0].size();
+    }
+    constexpr T at(int i, int j) const {
+        // one-base
+        return _m[i - 1][j - 1];
+    }
+    constexpr T &get(int i, int j) { return _m[i - 1][j - 1]; }
+    static constexpr Matrix identity(int n) {
+        Matrix ret(n);
+        for (int i = 0; i < n; i++) {
+            ret._m[i][i] = 1;
+        }
+        return ret;
+    }
+    constexpr bool square() { return this->_c == this->_r; }
+    constexpr Matrix pow(ll n) {
+        assert(this->square());
+        Matrix ret(identity(this->_c));
+        Matrix temp(*this);
+        while (n) {
+            if (n & 1) {
+                ret *= temp;
+            }
+            temp *= temp;
+            n >>= 1;
+        }
+        return ret;
+    }
+    static constexpr Matrix fast(std::vector<T> &a) {
+        Matrix ret(a.size());
+        for (int i = 0; i < ret._r - 1; i++) {
+            ret._m[i + 1][i] = 1;
+        }
+        int lst = ret._c - 1;
+        for (int i = 0; i < ret._r; i++) {
+            ret._m[i][lst] = a[i];
+        }
+        return ret;
+    }
+    constexpr Matrix &operator*=(const Matrix &rhs) {
+        return *this = *this * rhs;
+    }
+    friend constexpr Matrix operator*(const Matrix &lhs, const Matrix &rhs) {
+        assert(lhs._c == rhs._r);
+        Matrix ret(lhs._r, rhs._c);
+        for (int i = 0; i < lhs._r; i++) {
+            for (int j = 0; j < lhs._c; j++) {
+                if (lhs._m[i][j] != 0) {
+                    for (int k = 0; k < rhs._c; k++) {
+                        if (rhs._m[j][k] != 0) {
+                            ret._m[i][k] += lhs._m[i][j] * rhs._m[j][k];
+                        }
+                    }
+                }
+            }
+        }
+        return ret;
+    }
+    friend constexpr std::istream &operator>>(std::istream &is,
+                                              Matrix &matrix) {
+        is >> matrix._r >> matrix._c;
+        for (int i = 0; i < matrix._r; i++) {
+            for (int j = 0; j < matrix._c; j++) {
+                is >> matrix._m[i][j];
+            }
+        }
+        return is;
+    }
+    friend constexpr std::ostream &operator<<(std::ostream &os,
+                                              const Matrix m) {
+        for (int i = 0; i < m._r; i++) {
+            for (int j = 0; j < m._c; j++) {
+                os << m._m[i][j] << " \n"[j == m._c - 1];
+            }
+        }
+        return os;
+    }
+
+private:
+    std::vector<std::vector<T>> _m;
+    int _r, _c;
+};
+]], {}, { delimiters = "@$" })),
+
+  s("char_trie", fmt([[
+template <class T>
+struct Trie {
+    Trie(int n, int l, int suf) : _l(l), _suf(suf){
+        _size =  suf_ceil(n) + n * _lz;
+        _son = std::vector<std::vector<int>>(_size, std::vector<int>(suf));
+        _times = std::vector<T>(_size);
+    }
+    Trie(int suml, int suf)
+        : _size(suml + 1), _son(_size, std::vector<int>(suf)), _times(_size) {}
+
+    T query(const std::string &x) const {
+        int p = 0;
+        for (auto ch : x) {
+            int s = ch - 'a';
+            if (!_son[p][s]) {
+                return 0;
+            }
+            p = _son[p][s];
+        }
+        return _times[p];
+    }
+    void insert(const std::string &x) {
+        int p = 0;
+        for (auto ch : x) {
+            int s = ch - 'a';
+            if (!_son[p][s]) {
+                _son[p][s] = ++cnt;
+            }
+            p = _son[p][s];
+        }
+        _times[p]++;
+    }
+
+private:
+    int _size, _l, _suf, _lz;
+    std::vector<std::vector<int>> _son;
+    std::vector<T> _times;
+    int cnt = 0;
+    unsigned int suf_ceil(unsigned int n) {
+        unsigned int x = 1;
+        int i;
+        for (i = -1; x < n; i++) {
+            x *= _suf;
+        }
+        _lz = _l - i;
+        return x;
+    }
+};
+    ]], {}, { delimiters = "@$" }))
+  ,
+  s("int_trie", fmt([[
+template <class T>
+struct Trie {
+    Trie(int n, int l, int suf) : _l(l), _suf(suf){
+        _size =  suf_ceil(n) + n * _lz;
+        _son = std::vector<std::vector<int>>(_size, std::vector<int>(suf));
+        _times = std::vector<T>(_size);
+    }
+    Trie(int suml, int suf)
+        : _size(suml + 1), _son(_size, std::vector<int>(suf)), _times(_size) {}
+
+    T query(const int x) const {
+        int p = 0;
+        for (int i = 31; i >= 0; i--) {
+            int s = (x >> i) & 1;
+            if (!_son[p][s]) {
+                return 0;
+            }
+            p = _son[p][s];
+        }
+        return _times[p];
+    }
+    void insert(const int x) {
+        int p = 0;
+        for (int i = 31; i >= 0; i--) {
+            int s = (x >> i) & 1;
+            if (!_son[p][s]) {
+                _son[p][s] = ++cnt;
+            }
+            p = _son[p][s];
+        }
+        _times[p]++;
+    }
+    int xor_max(const int x) const {
+        int ans = 0;
+        int p = 0;
+        for (int i = 31; i >= 0; i--) {
+            int b = (x >> i) & 1;
+            if (_son[p][!b]) {
+                ans = ans * 2 + 1;
+                p = _son[p][!b];
+            } else {
+                ans *= 2;
+                p = _son[p][b];
+            }
+        }
+        return ans;
+    }
+
+private:
+    int _size, _l, _suf, _lz;
+    std::vector<std::vector<int>> _son;
+    std::vector<T> _times;
+    int cnt = 0;
+    unsigned int suf_ceil(unsigned int n) {
+        unsigned int x = 1;
+        int i;
+        for (i = -1; x < n; i++) {
+            x *= _suf;
+        }
+        _lz = _l - i;
+        return x;
+    }
+};
+]], {}, { delimiters = "@$" })),
 
   s("comb", fmt([[
 struct Comb {
@@ -583,19 +907,19 @@ struct Lca {
 ]], {}, { delimiters = "@#" })),
 
   s("fenwick_tree", fmt([[
-template <class T = ll>
+template <class Info>
 struct FenwickTree {
     FenwickTree() : n(0) {}
-    explicit FenwickTree(int _n) : n(_n), data(n + 1) {}
+    explicit FenwickTree(int n_) : n(n_), info(n + 1) {}
 
-    void add(int p, T x) {
+    void add(int p, Info x) {
         while (p <= n) {
-            data[p] += x;
+            info[p] += x;
             p += p & -p;
         }
     }
-    T sum(int l, int r) { return sum(r) - sum(l - 1); }
-    int query(T x) {
+    Info sum(int l, int r) { return sum(r) - sum(l - 1); }
+    int query(Info x) {
         int pos = 0, l = 1;
         while (1 << l <= n) {
             l++;
@@ -603,9 +927,9 @@ struct FenwickTree {
         for (int i = l - 1; i >= 0; i--) {
             int j = 1 << i;
             // rightmost
-            if (pos + j <= n && data[pos + j] <= x) {
+            if (pos + j <= n && info[pos + j] <= x) {
                 pos += j;
-                x -= data[pos];
+                x -= info[pos];
             }
         }
         return pos;
@@ -614,65 +938,68 @@ struct FenwickTree {
 
 private:
     int n;
-    std::vector<T> data;
+    std::vector<Info> info;
 
-    T sum(int p) {
-        T s = 0;
+    Info sum(int p) {
+        Info s = 0;
         while (p) {
-            s += data[p];
+            s += info[p];
             p -= p & -p;
         }
         return s;
     }
 };
-  ]], {}, { delimiters = "@$" })),
+]], {}, { delimiters = "@$" })),
 
   s("segtree", fmt([[
-template <class T>
+template <class Info>
 struct Segtree {
     Segtree() : n(0) {}
-    explicit Segtree(int _n) : n(_n) {
-        size = bit_ceil(n);
-        log = __builtin_ctz(size);
-        d = std::vector<T>(size * 2);
-    }
-    // one-base
-    explicit Segtree(int _n, std::vector<T> &a) : n(_n) {
-        size = bit_ceil(n);
-        log = __builtin_ctz(size);
-        d = std::vector<T>(size * 2);
-        build(a);
+    explicit Segtree(int n_, Info v_ = Info())
+        : Segtree(n_, std::vector(n_, v_)) {}
+
+    template <class T>
+    explicit Segtree(int n_, std::vector<T> a_) : n(n_) {
+        init(n_, a_);
     }
 
-    void build(std::vector<T> &a) { build(a, 1, 1, n); }
-    void build(std::vector<T> &a, int id, int l, int r) {
-        if (l == r) {
-            d[id] = a[l];
-            return;
-        }
-        int m = (l + r) / 2;
-        build(a, id * 2, l, m);
-        build(a, id * 2 + 1, m + 1, r);
-        update(id);
+    template <class T>
+    void init(int n_, std::vector<T> a_) {
+        size = bit_ceil(n_);
+        log = __builtin_ctz(size);
+        info.assign(size * 2, Info());
+        std::function<void(int, int, int)> build = [&](int id, int l, int r) {
+            if (l == r) {
+                info[id] = a_[l];
+                return;
+            }
+            int m = (l + r) / 2;
+            build(id * 2, l, m);
+            build(id * 2 + 1, m + 1, r);
+            update(id);
+        };
+        build(1, 1, n_);
     }
-    void set(int p, T val) { set(p, val, 1, 1, n); }
-    void set(int p, T val, int id, int l, int r) {
+
+    void set(int p, const Info &v) { set(p, v, 1, 1, n); }
+    void set(int p, const Info &v, int id, int l, int r) {
         if (l == r) {
-            d[id] = val;
+            info[id] = v;
             return;
         }
         int m = (l + r) / 2;
         if (p <= m) {
-            set(p, val, id * 2, l, m);
+            set(p, v, id * 2, l, m);
         } else {
-            set(p, val, id * 2 + 1, m + 1, r);
+            set(p, v, id * 2 + 1, m + 1, r);
         }
         update(id);
     }
-    T query(int ql, int qr) const { return query(ql, qr, 1, 1, n); }
-    T query(int ql, int qr, int id, int l, int r) const {
+
+    Info query(int ql, int qr) const { return query(ql, qr, 1, 1, n); }
+    Info query(int ql, int qr, int id, int l, int r) const {
         if (l == ql && r == qr) {
-            return d[id];
+            return info[id];
         }
         int m = (l + r) / 2;
         if (qr <= m) {
@@ -680,14 +1007,54 @@ struct Segtree {
         } else if (ql > m) {
             return query(ql, qr, id * 2 + 1, m + 1, r);
         } else {
-            return op(query(ql, m, id * 2, l, m),
-                      query(m + 1, qr, id * 2 + 1, m + 1, r));
+            return query(ql, m, id * 2, l, m) +
+                   query(m + 1, qr, id * 2 + 1, m + 1, r);
         }
+    }
+
+    template <class F>
+    int find_first(int ql, int qr, F &&pred) {
+        return find_first(ql, qr, 1, 1, n, pred);
+    }
+    template <class F>
+    int find_first(int ql, int qr, int id, int l, int r, F &&pred) {
+        if (l > qr || r < ql || !pred(info[id])) {
+            return -1;
+        }
+        if (l == r) {
+            return id;
+        }
+        int m = (l + r) / 2;
+        int res = find_first(ql, qr, id * 2, l, m, pred);
+        if (res == -1) {
+            res = find_first(ql, qr, id * 2 + 1, m + 1, r, pred);
+        }
+        return res;
+    }
+
+    template <class F>
+    int find_last(int ql, int qr, F &&pred) {
+        return find_last(ql, qr, 1, 1, n, pred);
+    }
+    template <class F>
+    int find_last(int ql, int qr, int id, int l, int r, F &&pred) {
+        if (l > qr || r < ql || !pred(info[id])) {
+            return -1;
+        }
+        if (l == r) {
+            return id;
+        }
+        int m = (l + r) / 2;
+        int res = find_first(ql, qr, id * 2 + 1, m + 1, r, pred);
+        if (res == -1) {
+            res = find_first(ql, qr, id * 2, l, m, pred);
+        }
+        return res;
     }
 
 private:
     int n, size, log;
-    std::vector<T> d;
+    std::vector<Info> info;
     unsigned int bit_ceil(unsigned int n) {
         unsigned int x = 1;
         while (x < (unsigned int)(n)) {
@@ -695,68 +1062,86 @@ private:
         }
         return x;
     }
-    void update(int p) { d[p] = op(d[p * 2], d[p * 2 + 1]); }
-    T op(T lhs, T rhs) const { return lhs + rhs; }
+    void update(int p) { info[p] = info[p * 2] + info[p * 2 + 1]; }
 };
-  ]], {}, { delimiters = "@$" })),
+
+struct Info {
+    int x;
+
+    friend Info operator+(const Info &lhs, const Info &rhs) {
+        return {lhs.x + rhs.x};
+    }
+};
+]], {}, { delimiters = "@$" })),
 
   s("lazy_segtree", fmt([[
-template <class T, class S>
+template <class Info, class Tag>
 struct LazySegtree {
     LazySegtree() : n(0) {}
-    explicit LazySegtree(int _n) : n(_n) {
-        size = bit_ceil(n);
-        log = __builtin_ctz(size);
-        d = std::vector<T>(size * 2);
-        sz = std::vector<int>(size * 2);
-        lz = std::vector<S>(size * 2);
-    }
-    // one-base
-    explicit LazySegtree(int _n, std::vector<T> &a) : n(_n) {
-        size = bit_ceil(n);
-        log = __builtin_ctz(size);
-        d = std::vector<T>(size * 2);
-        sz = std::vector<int>(size * 2);
-        lz = std::vector<S>(size * 2);
-        build(a);
+    explicit LazySegtree(int n_, Info v_ = Info())
+        : LazySegtree(n_, std::vector(n_, v_)) {}
+
+    template <class T>
+    explicit LazySegtree(int n_, std::vector<T> a_) : n(n_) {
     }
 
-    void build(std::vector<T> &a) { build(a, 1, 1, n); }
-    void build(std::vector<T> &a, int id, int l, int r) {
-        sz[id] = r - l + 1;
+    template <class T>
+    void init(int n_, std::vector<T> a_) {
+        size = bit_ceil(n_);
+        log = __builtin_ctz(size);
+        info.assign(size * 2, Info());
+        tag.assign(size * 2, Tag());
+        std::function<void(int, int, int)> build = [&](int id, int l, int r) {
+            if (l == r) {
+                info[id] = a_[l];
+                return;
+            }
+            int m = (l + r) / 2;
+            build(id * 2, l, m);
+            build(id * 2 + 1, m + 1, r);
+            update(id);
+        };
+        build(1, 1, n_);
+    }
+    void set(int p, const Info &v) { set(p, v, 1, 1, n); }
+    void set(int p, const Info &v, int id, int l, int r) {
         if (l == r) {
-            d[id] = a[l];
+            info[l] = v;
             return;
         }
         int m = (l + r) / 2;
-        build(a, id * 2, l, m);
-        build(a, id * 2 + 1, m + 1, r);
+        push(id);
+        if (p <= m) {
+            set(p, v, id * 2, l, m);
+        } else {
+            set(p, v, id * 2 + 1, m + 1, r);
+        }
         update(id);
     }
 
-    void modify(int ml, int mr, S x) { modify(ml, mr, x, 1, 1, n); }
-    void modify(int ml, int mr, S x, int id, int l, int r) {
+    void modify(int ml, int mr, const Tag &t) { modify(ml, mr, t, 1, 1, n); }
+    void modify(int ml, int mr, const Tag &t, int id, int l, int r) {
         if (l == ml && r == mr) {
-            apply(id, x);
+            apply(id, t);
             return;
         }
         push(id);
         int m = (l + r) / 2;
         if (mr <= m) {
-            modify(ml, mr, x, id * 2, l, m);
+            modify(ml, mr, t, id * 2, l, m);
         } else if (ml > m) {
-            modify(ml, mr, x, id * 2 + 1, m + 1, r);
+            modify(ml, mr, t, id * 2 + 1, m + 1, r);
         } else {
-            modify(ml, m, x, id * 2, l, m);
-            modify(m + 1, mr, x, id * 2 + 1, m + 1, r);
+            modify(ml, mr, t, id * 2, l, m);
+            modify(ml, mr, t, id * 2 + 1, m + 1, r);
         }
         update(id);
     }
 
-    T query(int ql, int qr) { return query(ql, qr, 1, 1, n); }
-    T query(int ql, int qr, int id, int l, int r) {
+    Info query(int ql, int qr) { return query(ql, qr, 1, 1, n); }
+    Info query(int ql, int qr, int id, int l, int r) {
         if (l == ql && r == qr) {
-            return d[id];
+            return info[id];
         }
         push(id);
         int m = (l + r) / 2;
@@ -765,16 +1150,57 @@ struct LazySegtree {
         } else if (ql > m) {
             return query(ql, qr, id * 2 + 1, m + 1, r);
         } else {
-            return op(query(ql, m, id * 2, l, m),
-                      query(m + 1, qr, id * 2 + 1, m + 1, r));
+            return query(ql, m, id * 2, l, m) +
+                   query(m + 1, qr, id * 2 + 1, m + 1, r);
         }
+    }
+
+    template <class F>
+    int find_first(int ql, int qr, F &&pred) {
+        return find_first(ql, qr, 1, 1, n, pred);
+    }
+    template <class F>
+    int find_first(int ql, int qr, int id, int l, int r, F &&pred) {
+        if (l > qr || r < ql || !pred(info[id])) {
+            return -1;
+        }
+        if (l == r) {
+            return id;
+        }
+        push(id);
+        int m = (l + r) / 2;
+        int res = find_first(ql, qr, id * 2, l, m, pred);
+        if (res == -1) {
+            res = find_first(ql, qr, id * 2 + 1, m + 1, r, pred);
+        }
+        return res;
+    }
+
+    template <class F>
+    int find_last(int ql, int qr, F &&pred) {
+        return find_last(ql, qr, 1, 1, n, pred);
+    }
+    template <class F>
+    int find_last(int ql, int qr, int id, int l, int r, F &&pred) {
+        if (l > qr || r < ql || !pred(info[id])) {
+            return -1;
+        }
+        if (l == r) {
+            return id;
+        }
+        push(id);
+        int m = (l + r) / 2;
+        int res = find_first(ql, qr, id * 2 + 1, m + 1, r, pred);
+        if (res == -1) {
+            res = find_first(ql, qr, id * 2, l, m, pred);
+        }
+        return res;
     }
 
 private:
     int n, size, log;
-    std::vector<T> d;
-    std::vector<int> sz;
-    std::vector<S> lz;
+    std::vector<Info> info;
+    std::vector<Tag> tag;
     unsigned int bit_ceil(unsigned int n) {
         unsigned int x = 1;
         while (x < (unsigned int)(n)) {
@@ -782,23 +1208,55 @@ private:
         }
         return x;
     }
-    void update(int id) { d[id] = op(d[id * 2], d[id * 2 + 1]); }
-    T op(T lhs, T rhs) { return lhs + rhs; }
-
-    void apply(int id, S tag) {
-        d[id] += tag * sz[id];
-        lz[id] += tag;
+    void update(int id) { info[id] = info[id * 2] + info[id * 2 + 1]; }
+    void apply(int id, const Tag &t) {
+        info[id].apply(t);
+        tag[id].apply(t);
     }
     void push(int id) {
-        if (lz[id]) {
-            apply(id * 2, lz[id]);
-            apply(id * 2 + 1, lz[id]);
-            lz[id] = 0;
-        }
+        apply(id * 2, tag);
+        apply(id * 2 + 1, tag);
+        tag[id] = Tag();
     }
 };
-  ]], {}, { delimiters = "@$" }))
 
+struct Tag {
+    void apply(const Tag &t) {}
+};
+
+struct Info {
+    int x;
+
+    friend Info operator+(const Info &lhs, const Info &rhs) {
+        return lhs + rhs;
+    }
+    void apply(const Tag &t) {}
+};
+  ]], {}, { delimiters = "@$" })),
+  s("euler_sieve", fmt([[
+std::vector<int> minp, primes;
+
+void sieve(int n) {
+    minp.assign(n + 1, 0);
+    primes.clear();
+
+    for (int i = 2; i <= n; i++) {
+        if (!minp[i]) {
+            minp[i] = i;
+            primes.push_back(i);
+        }
+        for (auto p : primes) {
+            if (i * p > n) {
+                break;
+            }
+            minp[i * p] = p;
+            if (i % p == 0) {
+                break;
+            }
+        }
+    }
+}
+  ]], {}, { delimiters = "@$" })),
 }
 
 
