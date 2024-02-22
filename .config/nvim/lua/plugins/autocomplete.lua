@@ -28,17 +28,26 @@ return {
             enable_autosnippets = true,
             store_selection_keys = ";",
           })
-          require("luasnip.loaders.from_lua").load({ paths = "~/.config/nvim/snippets" })
+          require("luasnip.loaders.from_lua").load({ paths = { "~/.config/nvim/snippets" } })
           local auto_expand = require("luasnip").expand_auto
           require("luasnip").expand_auto = function(...)
             vim.o.undolevels = vim.o.undolevels
             auto_expand(...)
           end
-          vim.keymap.set("i", "<M-n>", "<Plug>luasnip-next-choice", {noremap = true, silent = true})
-          vim.keymap.set("v", "<M-n>", "<Plug>luasnip-next-choice", {noremap = true, silent = true})
-          vim.keymap.set("i", "<M-p>", "<Plug>luasnip-prev-choice", {noremap = true, silent = true})
-          vim.keymap.set("v", "<M-p>", "<Plug>luasnip-prev-choice", {noremap = true, silent = true})
+
+          local ls = require("luasnip")
+          vim.keymap.set({ "i", "s" }, "<C-l>", function()
+            if ls.choice_active() then
+              ls.change_choice(1)
+            end
+          end)
+          vim.keymap.set({ "i", "s" }, "<C-h>", function()
+            if ls.choice_active() then
+              ls.change_choice(-1)
+            end
+          end)
         end
+
       },
       "saadparwaiz1/cmp_luasnip",
       {
