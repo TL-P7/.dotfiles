@@ -98,29 +98,26 @@ unsigned int bit_ceil(unsigned int n) {
     ]], {}, { delimiters = "@$" })),
 
   s("manacher", fmt([[
-    // one-base
-    t = " " + t;
-    int len = t.size() << 1;
-    s.resize(len);
-    s[1] = '#';
-    for (int i = 1, __ = t.size(); i < __; i++) {
-        s[i << 1] = t[i];
-        s[i << 1 | 1] = '#';
+    auto t = " " + all;
+    int manacherlen = t.size() << 1;
+    std::string newt;
+    newt.resize(manacherlen);
+    newt[1] = '$';
+    for (int i = 1; i < t.size(); i++) {
+        newt[i * 2] = t[i];
+        newt[i * 2 + 1] = '$';
     }
-    std::vector<int> p(len);
+    std::vector<int> p(manacherlen);
     int m = 0, r = 0;
     p[1] = 1;
-    for (int i = 1; i < len; i++) {
+    for (int i = 1; i < manacherlen; i++) {
         if (i > r) {
             p[i] = 1;
         } else {
-            p[i] = std::min(r - i + 1, p[(m << 1) - i]);
+            p[i] = std::min(r - i + 1, p[m * 2 - i]);
         }
-    ]]
-    ..
-    "while (i + p[i] < len && i - p[i] > 0 && s[i + p[i]] == s[i - p[i]]) {\n"
-    ..
-    [[
+        while (i + p[i] < manacherlen && i - p[i] > 0 &&
+               newt[ i + p[i] ] == newt[ i - p[i] ]) {
             p[i]++;
         }
         if (i + p[i] - 1 > r) {
@@ -128,7 +125,7 @@ unsigned int bit_ceil(unsigned int n) {
             r = i + p[i] - 1;
         }
     }
-    ]], {}, { delimiters = "@$" })),
+]], {}, { delimiters = "@#" })),
 
   s("kmp", fmt([[
     for (int i = 1, j = 0; i < n; i++) {
@@ -919,7 +916,7 @@ struct FenwickTree {
         }
     }
     Info sum(int l, int r) { return sum(r) - sum(l - 1); }
-    int query(Info x) {
+    int find_last(Info x) {
         int pos = 0, l = 1;
         while (1 << l <= n) {
             l++;
@@ -1045,9 +1042,9 @@ struct Segtree {
             return id;
         }
         int m = (l + r) / 2;
-        int res = find_first(ql, qr, id * 2 + 1, m + 1, r, pred);
+        int res = find_last(ql, qr, id * 2 + 1, m + 1, r, pred);
         if (res == -1) {
-            res = find_first(ql, qr, id * 2, l, m, pred);
+            res = find_last(ql, qr, id * 2, l, m, pred);
         }
         return res;
     }
@@ -1066,13 +1063,12 @@ private:
 };
 
 struct Info {
-    int x;
-
+    @$
     friend Info operator+(const Info &lhs, const Info &rhs) {
-        return {lhs.x + rhs.x};
+        @$
     }
 };
-]], {}, { delimiters = "@$" })),
+]], { i(1), i(2) }, { delimiters = "@$" })),
 
   s("lazy_segtree", fmt([[
 template <class Info, class Tag>
@@ -1083,6 +1079,7 @@ struct LazySegtree {
 
     template <class T>
     explicit LazySegtree(int n_, std::vector<T> a_) : n(n_) {
+        init(n_, a_);
     }
 
     template <class T>
@@ -1132,8 +1129,8 @@ struct LazySegtree {
         } else if (ml > m) {
             modify(ml, mr, t, id * 2 + 1, m + 1, r);
         } else {
-            modify(ml, mr, t, id * 2, l, m);
-            modify(ml, mr, t, id * 2 + 1, m + 1, r);
+            modify(ml, m, t, id * 2, l, m);
+            modify(m + 1, mr, t, id * 2 + 1, m + 1, r);
         }
         update(id);
     }
@@ -1190,9 +1187,9 @@ struct LazySegtree {
         }
         push(id);
         int m = (l + r) / 2;
-        int res = find_first(ql, qr, id * 2 + 1, m + 1, r, pred);
+        int res = find_last(ql, qr, id * 2 + 1, m + 1, r, pred);
         if (res == -1) {
-            res = find_first(ql, qr, id * 2, l, m, pred);
+            res = find_last(ql, qr, id * 2, l, m, pred);
         }
         return res;
     }
@@ -1214,25 +1211,31 @@ private:
         tag[id].apply(t);
     }
     void push(int id) {
-        apply(id * 2, tag);
-        apply(id * 2 + 1, tag);
+        apply(id * 2, tag[id]);
+        apply(id * 2 + 1, tag[id]);
         tag[id] = Tag();
     }
 };
 
 struct Tag {
-    void apply(const Tag &t) {}
+    @$
+    Tag() = default;
+    void apply(const Tag &t) {
+        @$
+    }
 };
 
 struct Info {
-    int x;
-
+    @$
+    Info() = default;
     friend Info operator+(const Info &lhs, const Info &rhs) {
-        return lhs + rhs;
+        @$
     }
-    void apply(const Tag &t) {}
+    void apply(const Tag &t) {
+        @$
+    }
 };
-  ]], {}, { delimiters = "@$" })),
+  ]], { i(1), i(2), i(3), i(4), i(5) }, { delimiters = "@$" })),
   s("euler_sieve", fmt([[
 std::vector<int> minp, primes;
 

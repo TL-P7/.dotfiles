@@ -88,14 +88,16 @@ return {
       {}
     )
   ),
+
   s({ trig = "fml", snippetType = "autosnippet" }, c(1, {
     sn(nil, { t("$"), i(1), t("$") }),
     sn(nil, { t("$$"), i(1), t("$$") }),
-  })
-  ),
+  })),
+
   s({ trig = "\\te", snippetType = "autosnippet" },
     { t("\\text{"), i(1), t("}") }
   ),
+
   s("uls", {
     t("- "), i(1), d(2, rec_uls, {}),
   }),
