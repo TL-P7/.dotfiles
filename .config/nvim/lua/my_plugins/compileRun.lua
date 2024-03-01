@@ -8,12 +8,9 @@ local split = function()
 end
 local compileRun = function()
   local ft = vim.bo.filetype
-  vim.cmd([[
-    w
-    ]])
   if ft == "cpp" then
     split()
-    vim.cmd("term g++ % -o %< -std=c++17 -g -Wall -Wextra -Wpedantic && time ./%<")
+    vim.cmd("term g++ % -o %< -std=c++20 -g -Wall -Wextra -Wpedantic && time ./%<")
   elseif ft == "c" then
     split()
     if vim.fn.filereadable("Makefile") == 1 then
@@ -22,9 +19,10 @@ local compileRun = function()
       vim.cmd("term gcc -std=c99 % -o %< && time ./%<")
     end
   elseif ft == "python" then
-    vim.cmd("!python3 %")
+    split()
+    vim.cmd("term time python3 %")
   elseif ft == "sh" then
-    vim.cmd("!time bash %")
+    vim.cmd("term time bash %")
   elseif ft == "markdown" then
     vim.cmd("MarkdownPreview")
   elseif ft == "tex" then
