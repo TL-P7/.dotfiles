@@ -8,6 +8,7 @@ local split = function()
 end
 local compileRun = function()
   local ft = vim.bo.filetype
+  vim.cmd("w<CR>")
   if ft == "cpp" then
     split()
     vim.cmd("term g++ % -o %< -std=c++20 -g -Wall -Wextra -Wpedantic && time ./%<")
