@@ -1,7 +1,7 @@
 return {
   'xeluxee/competitest.nvim',
   dependencies = 'MunifTanjim/nui.nvim',
-  ft = { 'cpp', 'python' },
+  ft = { 'c', 'cpp', 'python' },
   config = function()
     require('competitest').setup({
       compile_command = {
@@ -15,7 +15,7 @@ return {
         c         = { exec = "./$(FNOEXT)" },
         cpp       = { exec = './$(FNOEXT)' },
         rust      = { exec = "./$(FNOEXT)" },
-        python    = { exec = "python", args = { "$(FNAME)" } },
+        python    = { exec = "python3", args = { "$(FNAME)" } },
         java      = { exec = "java", args = { "$(FNOEXT)" } },
         some_lang = { exec = 'some_interpreter', args = { '$(FNAME)' } },
       },
