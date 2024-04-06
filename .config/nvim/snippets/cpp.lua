@@ -19,15 +19,58 @@ local fmta = require("luasnip.extras.fmt").fmta
 local types = require("luasnip.util.types")
 local conds = require("luasnip.extras.expand_conditions")
 
+local function simple_restore(args, _)
+  return sn(nil, { i(1, args[1]) })
+end
+
 
 return {
+  s("alll", {
+    i(1, "x"), t { ".begin(), " },
+    d(2, simple_restore, 1), t { ".end()" }
+  }),
+
+  s("find_prime", fmt([[
+    bool isPrime(int x) {
+        for (int i = 2; i <= x / i; i++) {
+            if (x % i == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    int findPrime(int x) {
+        while (!isPrime(x)) {
+            x++;
+        }
+        return x;
+    }
+  ]], {}, { delimiters = "@$" })),
+
+  s("cfhash", fmt([[
+    struct custom_hash {
+        static uint64_t splitmix64(uint64_t x) {
+            // http://xorshift.di.unimi.it/splitmix64.c
+            x += 0x9e3779b97f4a7c15;
+            x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
+            x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
+            return x ^ (x >> 31);
+        }
+
+        size_t operator()(uint64_t x) const {
+            static const uint64_t FIXED_RANDOM = std::chrono::steady_clock::now().time_since_epoch().count();
+            return splitmix64(x + FIXED_RANDOM);
+        }
+    };
+  ]], {}, { delimiters = "@$" })),
+
   s("tem", fmt([[
     #include <bits/stdc++.h>
 
     using ll = long long;
     using PII = std::pair<int, int>;
     using ld = long double;
-    using i128 = __int128;
 
     int main() {
         std::ios::sync_with_stdio(false);
@@ -43,7 +86,6 @@ return {
     using ll = long long;
     using PII = std::pair<int, int>;
     using ld = long double;
-    using i128 = __int128;
 
     void solve() {
         @$
@@ -73,7 +115,7 @@ unsigned int bit_ceil(unsigned int n) {
   s("z_algorithm", fmt([[
     // one-base
     std::string s = " " + b + "#" + a;
-    int len = s.size();
+    const int len = s.size();
     std::vector<int> z(len); // max matches
     int l = 0, r = 0;
     z[1] = b.size();
@@ -85,7 +127,7 @@ unsigned int bit_ceil(unsigned int n) {
         }
     ]]
     ..
-    "while (i + z[i] < len && s[i + z[i]] == s[1 + z[i]]) {\n"
+    "\twhile (i + z[i] < len && s[i + z[i]] == s[1 + z[i]]) {\n"
     ..
     [[
             z[i]++;
@@ -99,24 +141,24 @@ unsigned int bit_ceil(unsigned int n) {
 
   s("manacher", fmt([[
     auto t = " " + all;
-    int manacherlen = t.size() << 1;
+    const int len = t.size() << 1;
     std::string newt;
-    newt.resize(manacherlen);
+    newt.resize(len);
     newt[1] = '$';
     for (int i = 1; i < t.size(); i++) {
         newt[i * 2] = t[i];
         newt[i * 2 + 1] = '$';
     }
-    std::vector<int> p(manacherlen);
+    std::vector<int> p(len);
     int m = 0, r = 0;
     p[1] = 1;
-    for (int i = 1; i < manacherlen; i++) {
+    for (int i = 1; i < len; i++) {
         if (i > r) {
             p[i] = 1;
         } else {
             p[i] = std::min(r - i + 1, p[m * 2 - i]);
         }
-        while (i + p[i] < manacherlen && i - p[i] > 0 &&
+        while (i + p[i] < len && i - p[i] > 0 &&
                newt[ i + p[i] ] == newt[ i - p[i] ]) {
             p[i]++;
         }
@@ -166,7 +208,7 @@ unsigned int bit_ceil(unsigned int n) {
 
   s("noweight_graph", fmta([[
 struct Graph {
-    explicit Graph(int _n) : n(_n), adj(_n + 1) {}
+    explicit Graph(int n_) : n(n_), adj(n_ + 1) {}
     void add_edge(int u, int v) { adj[u].emplace_back(v); }
     void add_edges(int u, int v) {
         adj[u].emplace_back(v);
@@ -180,7 +222,7 @@ struct Graph {
   s("weight_graph", fmta([[
 template <class T>
 struct Graph {
-    explicit Graph(int _n) : n(_n), adj(_n + 1), wgt(_n + 1) {}
+    explicit Graph(int n_) : n(n_), adj(n_ + 1), wgt(n_ + 1) {}
     void add_edge(int u, int v, T w) {
         adj[u].emplace_back(v);
         wgt[u].emplace_back(w);
@@ -210,7 +252,7 @@ struct OEdges {
   s("dsu", fmta([[
 struct Dsu {
     explicit Dsu() : n(0) {}
-    explicit Dsu(int _n) : n(_n), p(_n + 1, -1) {}
+    explicit Dsu(int n_) : n(n_), p(n_ + 1, -1) {}
 
 
     int root(int x) { return p[x] < 0 ? x : p[x] = root(p[x]); }
@@ -371,7 +413,7 @@ public:
         return ans;
     }
 
-    Mint inv() const { return this->pow(mod - 2); }
+    Mint inv() const { return this->pow(_mod - 2); }
     friend constexpr std::istream &operator>>(std::istream &is, Mint &mint) {
         is >> mint._x;
         norm(mint._x %= _mod);
@@ -517,7 +559,7 @@ ll Z::_mod;
 ll mod;
 ]], {}, { delimiters = "@$" })),
   s("matrix", fmt([[
-template <class T = int>
+template <class T>
 struct Matrix {
     Matrix() : _r(0), _c(0) {}
     explicit Matrix(int r, int c, std::vector<std::vector<T>> &m)
@@ -525,21 +567,20 @@ struct Matrix {
 
     explicit Matrix(int n) : Matrix(n, n) {}
     explicit Matrix(int r, int c) : _r(r), _c(c) {
-        _m = std::vector<std::vector<T>>(r, std::vector<T>(c));
+        _m = std::vector<std::vector<T>>(r + 1, std::vector<T>(c + 1));
     }
     explicit Matrix(std::vector<std::vector<T>> &m) : _m(m) {
         assert(m.size() > 0 && m[0].size() > 0);
-        _r = m.size();
-        _c = m[0].size();
+        _r = m.size() - 1;
+        _c = m[0].size() - 1;
     }
     constexpr T at(int i, int j) const {
-        // one-base
-        return _m[i - 1][j - 1];
+        return _m[i][j];
     }
-    constexpr T &get(int i, int j) { return _m[i - 1][j - 1]; }
+    constexpr T &get(int i, int j) { return _m[i][j]; }
     static constexpr Matrix identity(int n) {
         Matrix ret(n);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i <= n; i++) {
             ret._m[i][i] = 1;
         }
         return ret;
@@ -558,27 +599,18 @@ struct Matrix {
         }
         return ret;
     }
-    static constexpr Matrix fast(std::vector<T> &a) {
-        Matrix ret(a.size());
-        for (int i = 0; i < ret._r - 1; i++) {
-            ret._m[i + 1][i] = 1;
-        }
-        int lst = ret._c - 1;
-        for (int i = 0; i < ret._r; i++) {
-            ret._m[i][lst] = a[i];
-        }
-        return ret;
-    }
+
     constexpr Matrix &operator*=(const Matrix &rhs) {
         return *this = *this * rhs;
     }
+
     friend constexpr Matrix operator*(const Matrix &lhs, const Matrix &rhs) {
         assert(lhs._c == rhs._r);
         Matrix ret(lhs._r, rhs._c);
-        for (int i = 0; i < lhs._r; i++) {
-            for (int j = 0; j < lhs._c; j++) {
+        for (int i = 0; i <= lhs._r; i++) {
+            for (int j = 0; j <= lhs._c; j++) {
                 if (lhs._m[i][j] != 0) {
-                    for (int k = 0; k < rhs._c; k++) {
+                    for (int k = 0; k <= rhs._c; k++) {
                         if (rhs._m[j][k] != 0) {
                             ret._m[i][k] += lhs._m[i][j] * rhs._m[j][k];
                         }
@@ -587,25 +619,6 @@ struct Matrix {
             }
         }
         return ret;
-    }
-    friend constexpr std::istream &operator>>(std::istream &is,
-                                              Matrix &matrix) {
-        is >> matrix._r >> matrix._c;
-        for (int i = 0; i < matrix._r; i++) {
-            for (int j = 0; j < matrix._c; j++) {
-                is >> matrix._m[i][j];
-            }
-        }
-        return is;
-    }
-    friend constexpr std::ostream &operator<<(std::ostream &os,
-                                              const Matrix m) {
-        for (int i = 0; i < m._r; i++) {
-            for (int j = 0; j < m._c; j++) {
-                os << m._m[i][j] << " \n"[j == m._c - 1];
-            }
-        }
-        return os;
     }
 
 private:
@@ -903,20 +916,29 @@ struct Lca {
 };
 ]], {}, { delimiters = "@#" })),
 
-  s("fenwick_tree", fmt([[
+  s("fenwick", fmt([[
 template <class Info>
-struct FenwickTree {
-    FenwickTree() : n(0) {}
-    explicit FenwickTree(int n_) : n(n_), info(n + 1) {}
+struct Fenwick {
+    Fenwick(int n_ = 0) : n(n_) { info.assign(n + 2, Info()); }
 
     void add(int p, Info x) {
         while (p <= n) {
-            info[p] += x;
+            info[p] = info[p] + x;
             p += p & -p;
         }
     }
+
     Info sum(int l, int r) { return sum(r) - sum(l - 1); }
-    int find_last(Info x) {
+    Info sum(int p) {
+        Info s = Info();
+        while (p) {
+            s = s + info[p];
+            p -= p & -p;
+        }
+        return s;
+    }
+
+    int sumQuery(Info x) {
         int pos = 0, l = 1;
         while (1 << l <= n) {
             l++;
@@ -932,28 +954,25 @@ struct FenwickTree {
         return pos;
     }
 
-
 private:
     int n;
     std::vector<Info> info;
+};
 
-    Info sum(int p) {
-        Info s = 0;
-        while (p) {
-            s += info[p];
-            p -= p & -p;
-        }
-        return s;
+struct Int {
+    @$
+    friend Int operator+(const Int &lhs, const Int &rhs) {
+        @$
     }
 };
-]], {}, { delimiters = "@$" })),
+]], { i(1, "int v = 0;"), i(2, "return {lhs.v + rhs.v};") }, { delimiters = "@$" })),
 
   s("segtree", fmt([[
 template <class Info>
 struct Segtree {
     Segtree() : n(0) {}
     explicit Segtree(int n_, Info v_ = Info())
-        : Segtree(n_, std::vector(n_, v_)) {}
+        : Segtree(n_, std::vector(n_ + 1, v_)) {}
 
     template <class T>
     explicit Segtree(int n_, std::vector<T> a_) : n(n_) {
@@ -1007,6 +1026,9 @@ struct Segtree {
             return query(ql, m, id * 2, l, m) +
                    query(m + 1, qr, id * 2 + 1, m + 1, r);
         }
+    }
+    Info all() {
+        return info[1];
     }
 
     template <class F>
@@ -1075,7 +1097,7 @@ template <class Info, class Tag>
 struct LazySegtree {
     LazySegtree() : n(0) {}
     explicit LazySegtree(int n_, Info v_ = Info())
-        : LazySegtree(n_, std::vector(n_, v_)) {}
+        : LazySegtree(n_, std::vector(n_ + 1, v_)) {}
 
     template <class T>
     explicit LazySegtree(int n_, std::vector<T> a_) : n(n_) {
@@ -1150,6 +1172,9 @@ struct LazySegtree {
             return query(ql, m, id * 2, l, m) +
                    query(m + 1, qr, id * 2 + 1, m + 1, r);
         }
+    }
+    Info all() {
+        return info[1];
     }
 
     template <class F>
@@ -1260,69 +1285,34 @@ void sieve(int n) {
     }
 }
   ]], {}, { delimiters = "@$" })),
+  s("qpow", fmt([[
+<template class T>
+T qpow(T a, ll b) {
+    T ans = 1;
+    while (b) {
+        if (b & 1) {
+            ans *= a;
+        }
+        a *= a;
+        b >>= 1;
+    }
+    return ans;
 }
+  ]], {}, { delimiters = "@$" })),
+  s("exgcd", fmt([[
+// inv: ax + by = gcd(a, b) = 1
+// ax = 1 (mod b), by = 1 (mod a)
+ll exgcd(ll a, ll b, ll &x, ll &y) {
+    if (b == 0) {
+        x = 1;
+        y = 0;
+        return a;
+    }
 
+    ll gcd = exgcd(a, b, y, x);
+    y -= a / b * x;
 
---snippet qpow quick pow
---    ll qpow(ll a, ll b) {
---        ll res = 1;
---        while (b) {
---            if (b & 1) {
---                res = res * a;
---            }
---            a = a * a;
---            b >>= 1;
---        }
---        return res;
---    }
---
---
---snippet qpowp quick pow with p
---    ll qpow(ll a, ll b, ll p) {
---        ll res = 1;
---        while (b) {
---            if (b & 1) {
---                res = res * a % p;
---            }
---            a = a * a % p;
---            b >>= 1;
---        }
---        return res;
---    }
---
---snippet qpownop quick pow without p
---    ll qpow(ll a, ll b) {
---        ll res = 1;
---        while (b) {
---            if (b & 1) {
---                res = res * a;
---            }
---            a = a * a;
---            b >>= 1;
---        }
---        return res;
---    }
---
---snippet exgcd extended gcd
---    ll exgcd(ll a, ll b, ll &x, ll &y) {
---        if (!b) {
---            x = 1;
---            y = 0;
---            return a;
---        }
---        ll d = exgcd(b, a % b, y, x);
---        y -= a / b * x;
---        return d;
---    }
---
---snippet exgcdp extended gcd with p
---    ll exgcd (ll a, ll b, ll &x, ll &y, ll p) {
---        if (!b) {
---            x = 1;
---            y = 0;
---            return a;
---        }
---        ll d = exgcd(b, a % b, y, x, p);
---        y -= a / b * x;
---        return d;
---    }
+    return gcd;
+}
+  ]], {}, { delimiters = "@$" }))
+}

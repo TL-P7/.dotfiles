@@ -34,7 +34,7 @@ end
 return {
   s({ trig = "#(%d)", regTrig = true },
     f(function(args, snip)
-      return string.rep("#", snip.captures[1], "")
+      return string.rep("#", snip.captures[1], "") .. " "
     end, {})
   ),
   s("i", { t("*"), i(1), t("*"), }),
