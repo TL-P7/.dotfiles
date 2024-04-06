@@ -20,5 +20,11 @@ return {
       -- require('monokai').setup { palette = require('monokai').soda }
       -- require('monokai').setup { palette = require('monokai').ristretto }
     end
+  },
+  {
+    "Enonya/yuyuko.vim",
+    config = function()
+      vim.keymap.set("n", "<leader>cy", "<Cmd>colorscheme yuyuko<CR>")
+    end
   }
 }
