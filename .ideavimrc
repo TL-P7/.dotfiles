@@ -32,9 +32,10 @@ set keep-english-in-normal
 " = No Leader Keymaps =====================================
 " ================================================================================================
 nmap ]g <action>(GotoNextError)
+nmap [g <action>(GotoPreviousError)
 nmap gt <action>(GotoTest)
-nmap gd <action>(MethodUp)
-nmap gi <action>(GotoImplementation)
+nmap gu <action>(MethodUp)
+nmap gd <action>(GotoImplementation)
 nmap gy <action>(GotoTypeDeclaration)
 
 " bookmark
@@ -44,9 +45,6 @@ nmap gy <action>(GotoTypeDeclaration)
 
 nmap <C-l> <action>(NextTab)
 nmap <C-h> <action>(PreviousTab)
-
-nmap <F11> <action>(Rerun)
-nmap <F10> <action>(RerunTests)
 
 nmap <C-f> <action>(ReformatCode) \| <action>(OptimizeImports)
 
@@ -82,11 +80,11 @@ nmap <leader>fl <action>(SelectInProjectView)
 let g:WhichKeyDesc_Find_FindText = "<leader>ft FindText"
 nmap <leader>ft <action>(FindInPath)
 
-let g:WhichKeyDesc_Find_Commands = "<leader>fc Commands"
-nmap <leader>fc <action>(GotoAction)
+let g:WhichKeyDesc_Find_Action = "<leader>fa Action"
+nmap <leader>fa <action>(GotoAction)
 
-let g:WhichKeyDesc_Find_OpenedProject = "<leader>fpr OpenedProject"
-nmap <leader>fpr <action>(OpenProjectWindows)
+let g:WhichKeyDesc_Find_OpenedProject = "<leader>fp OpenedProject"
+nmap <leader>fp <action>(OpenProjectWindows)
 
 let g:WhichKeyDesc_Show_FileStructure = "<leader>fs ShowFileStructure"
 nmap <leader>fs <action>(FileStructurePopup)
@@ -94,8 +92,8 @@ nmap <leader>fs <action>(FileStructurePopup)
 let g:WhichKeyDesc_Show_Bookmarks = "<leader>fb ShowBookmarks"
 nmap <leader>fb <action>(ShowBookmarks)
 
-let g:WhichKeyDesc_Show_ParameterInfo = "<leader>fpi ShowParameterInfo"
-nmap <leader>fpi <action>(ParameterInfo)
+let g:WhichKeyDesc_Show_ParameterInfo = "<leader>fi ShowParameterInfo"
+nmap <leader>fi <action>(ParameterInfo)
 
 " g: Git ⭐️
 let g:WhichKeyDesc_Git = "<leader>g Git"
@@ -133,11 +131,24 @@ let g:WhichKeyDesc_ToggleExplorerOrExtract = "<leader>mt ToggleExplorer"
 nmap <leader>mt <action>(ActivateProjectToolWindow)
 
 " e: Extract
+let g:WhichKeyDesc_Extract = "<leader>e Extract"
 " extract method/function
-vnoremap <leader>em <action>(ExtractMethod)
+let g:WhichKeyDesc_ExtractMethod = "<leader>em ExtractMethod"
+vmap <leader>em <action>(ExtractMethod)
 " extract constant
-vnoremap <leader>ec <action>(IntroduceConstant)
+let g:WhichKeyDesc_ExtractConstant = "<leader>ec ExtractConstant"
+vmap <leader>ec <action>(IntroduceConstant)
 " extract field
-vnoremap <leader>ef <action>(IntroduceField)
+let g:WhichKeyDesc_ExtractField = "<leader>ef ExtractField"
+vmap <leader>ef <action>(IntroduceField)
 " extract variable
-vnoremap <leader>ev <action>(IntroduceVariable)
+let g:WhichKeyDesc_ExtractVariable = "<leader>ev ExtractVariable"
+vmap <leader>ev <action>(IntroduceVariable)
+
+" g: generate
+let g:WhichKeyDesc_Generate = "<leader>g Generate"
+" generate constructor
+let g:WhichKeyDesc_Generate_Constructor = "<leader>gc Constructor"
+nmap <leader>gc <action>(Constructor)
+
+
