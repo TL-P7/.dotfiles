@@ -19,4 +19,10 @@ return {
       vim.cmd("TableModeEnable")
     end,
   },
+  {
+    "Kicamon/im-switch.nvim",
+    config = function()
+      require("im-switch").setup()
+    end
+  }
 }
