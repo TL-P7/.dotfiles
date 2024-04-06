@@ -1,8 +1,9 @@
 local function open_path()
   local paths = {
     "1. /home/tlp/.dotfiles/.config/nvim/",
-    "2. /home/tlp/Documents/cp/",
-    "3. /home/tlp/Documents/notes/",
+    "2. /home/tlp/Nutstore Files/code/cp/",
+    "2. /home/tlp/Nutstore Files/code/notes/",
+    "4. /home/tlp/.dotfiles/.config/",
   }
   local index = vim.fn.inputlist(paths)
 
