@@ -25,6 +25,7 @@ require("lazy").setup({
   require("plugins.editor"),
   require("plugins.markdown"),
   require("plugins.debug"),
+  require("plugins.git"),
   require("plugins.undo"),
   require("plugins.tex"),
   require("plugins.translator"),
