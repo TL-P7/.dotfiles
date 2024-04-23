@@ -627,122 +627,163 @@ private:
 };
 ]], {}, { delimiters = "@$" })),
 
-  s("char_trie", fmt([[
-template <class T>
+  s("trie", fmt([[
 struct Trie {
-    Trie(int n, int l, int suf) : _l(l), _suf(suf){
-        _size =  suf_ceil(n) + n * _lz;
-        _son = std::vector<std::vector<int>>(_size, std::vector<int>(suf));
-        _times = std::vector<T>(_size);
-    }
-    Trie(int suml, int suf)
-        : _size(suml + 1), _son(_size, std::vector<int>(suf)), _times(_size) {}
+    constexpr static int NEXT = 'z' - '0' + 2;
+    constexpr static int offset = '0';
+    struct Node {
+        int len;
+        std::vector<int> next;
+        Node() : len{} {
+            next.assign(NEXT, 0);
+        }
+    };
 
-    T query(const std::string &x) const {
+    std::vector<Node> t;
+
+    Trie() { init(); }
+
+    void init() {
+        newNode();
+    }
+
+    int newNode() {
+        t.emplace_back();
+        return t.size() - 1;
+    }
+
+    int add(const std::vector<int> &a) {
         int p = 0;
-        for (auto ch : x) {
-            int s = ch - 'a';
-            if (!_son[p][s]) {
+        for (auto x : a) {
+            if (t[p].next[x] == 0) {
+                t[p].next[x] = newNode();
+                t[ t[p].next[x] ].len = t[p].len + 1;
+            }
+
+
+            p = t[p].next[x];
+        }
+
+        return p;
+    }
+
+    int add(const std::string &a) {
+        std::vector<int> b(a.begin(), a.end());
+        for (auto &c : b) {
+            c -= offset;
+        }
+        return add(b);
+    }
+
+    int query(const std::vector<int> &a) {
+        int p = 0;
+        for (auto x : a) {
+            if (t[p].next[x] == 0) {
                 return 0;
             }
-            p = _son[p][s];
+
+            p = t[p].next[x];
         }
-        return _times[p];
-    }
-    void insert(const std::string &x) {
-        int p = 0;
-        for (auto ch : x) {
-            int s = ch - 'a';
-            if (!_son[p][s]) {
-                _son[p][s] = ++cnt;
-            }
-            p = _son[p][s];
-        }
-        _times[p]++;
+
+        return p;
     }
 
-private:
-    int _size, _l, _suf, _lz;
-    std::vector<std::vector<int>> _son;
-    std::vector<T> _times;
-    int cnt = 0;
-    unsigned int suf_ceil(unsigned int n) {
-        unsigned int x = 1;
-        int i;
-        for (i = -1; x < n; i++) {
-            x *= _suf;
+    int query(const std::string &a) {
+        std::vector<int> b(a.begin(), a.end());
+        for (auto &c : b) {
+            c -= offset;
         }
-        _lz = _l - i;
-        return x;
+        return query(b);
     }
 };
-    ]], {}, { delimiters = "@$" }))
-  ,
-  s("int_trie", fmt([[
-template <class T>
-struct Trie {
-    Trie(int n, int l, int suf) : _l(l), _suf(suf){
-        _size =  suf_ceil(n) + n * _lz;
-        _son = std::vector<std::vector<int>>(_size, std::vector<int>(suf));
-        _times = std::vector<T>(_size);
-    }
-    Trie(int suml, int suf)
-        : _size(suml + 1), _son(_size, std::vector<int>(suf)), _times(_size) {}
+    ]], {}, { delimiters = "@$" })),
 
-    T query(const int x) const {
-        int p = 0;
-        for (int i = 31; i >= 0; i--) {
-            int s = (x >> i) & 1;
-            if (!_son[p][s]) {
-                return 0;
-            }
-            p = _son[p][s];
-        }
-        return _times[p];
-    }
-    void insert(const int x) {
-        int p = 0;
-        for (int i = 31; i >= 0; i--) {
-            int s = (x >> i) & 1;
-            if (!_son[p][s]) {
-                _son[p][s] = ++cnt;
-            }
-            p = _son[p][s];
-        }
-        _times[p]++;
-    }
-    int xor_max(const int x) const {
-        int ans = 0;
-        int p = 0;
-        for (int i = 31; i >= 0; i--) {
-            int b = (x >> i) & 1;
-            if (_son[p][!b]) {
-                ans = ans * 2 + 1;
-                p = _son[p][!b];
-            } else {
-                ans *= 2;
-                p = _son[p][b];
-            }
-        }
-        return ans;
+  s("ac_automation", fmt([[
+struct AC {
+    constexpr static int NEXT = 26;
+    constexpr static int offset = 'a';
+    struct Node {
+        int len;
+        int link;
+        std::vector<int> next;
+        Node() : len{}, link{} { next.assign(NEXT, 0); }
+    };
+
+    std::vector<Node> t;
+    std::vector<int> q;
+
+    AC() { init(); }
+
+    void init() { newNode(); }
+
+    int newNode() {
+        t.emplace_back();
+        return t.size() - 1;
     }
 
-private:
-    int _size, _l, _suf, _lz;
-    std::vector<std::vector<int>> _son;
-    std::vector<T> _times;
-    int cnt = 0;
-    unsigned int suf_ceil(unsigned int n) {
-        unsigned int x = 1;
-        int i;
-        for (i = -1; x < n; i++) {
-            x *= _suf;
+    int add(const std::vector<int> &a) {
+        int p = 0;
+        for (auto x : a) {
+            if (t[p].next[x] == 0) {
+                t[p].next[x] = newNode();
+                t[ t[p].next[x] ].len = t[p].len + 1;
+            }
+
+            p = t[p].next[x];
         }
-        _lz = _l - i;
-        return x;
+
+        return p;
     }
+
+    int add(const std::string &a) {
+        std::vector<int> b(a.begin(), a.end());
+        for (auto &c : b) {
+            c -= offset;
+        }
+        return add(b);
+    }
+
+    void build() {
+        int h = 0;
+
+        for (int i = 0; i < NEXT; i++) {
+            if (t[0].next[i]) {
+                q.push_back(t[0].next[i]);
+            }
+        }
+
+        while (h < q.size()) {
+            int x = q[h];
+            h++;
+
+            for (int i = 0; i < NEXT; i++) {
+                if (t[x].next[i] == 0) {
+                    t[x].next[i] = t[t[x].link].next[i];
+                } else {
+                    t[ t[x].next[i] ].link = t[t[x].link].next[i];
+                    q.push_back(t[x].next[i]);
+                }
+            }
+        }
+    }
+
+    void update(std::function<void(int, int)> fun) {
+        for (int i = q.size() - 1; i >= 1; i--) {
+            fun(link(q[i]), q[i]);
+        }
+    }
+
+    int next(int p, int i) { return t[p].next[i]; }
+
+    int next(int p, char c) { return next(p, c - offset); }
+
+    int link(int p) { return t[p].link; }
+
+    int len(int p) { return t[p].len; }
+
+    int size() { return t.size(); }
 };
-]], {}, { delimiters = "@$" })),
+  ]], {}, { delimiters = "@$" })),
 
   s("comb", fmt([[
 struct Comb {
@@ -803,134 +844,125 @@ private:
   ]], {}, { delimiters = "@$" })),
 
   s("rw", fmt([[
-template <typename t>
-t read() {
-    t x = 0;
+std::istream &operator<<(std::istream &is, __int128 x) {
+    x = 0;
     char sign = 1;
-    char ch = std::cin.get();
-    while (!isdigit(ch)) {
+    std::string s;
+    is >> s;
+    for (auto ch : s) {
         if (ch == '-') {
-            sign *= -1;
+            sign = -1;
         }
-        ch = std::cin.get();
-    }
-    while (isdigit(ch)) {
         x = x * 10 + ch - '0';
-        ch = std::cin.get();
     }
-    return sign * x;
+    x *= sign;
+    return is;
 }
 
-template <typename t>
-void write(t x) {
+template <typename T>
+std::ostream &operator<<(std::ostream &os, __int128 x) {
     if (x < 0) {
-        std::cout << '-';
-        x *= -1;
+        os << "-";
+        x = -x;
     }
-    char stk[100], top = 0;
+    std::string s;
     do {
-        stk[++top] = x % 10 + '0';
+        s.push_back('0' + x % 10);
         x /= 10;
     } while (x);
-    while (top) {
-        std::cout << stk[top--];
-    }
+
+    std::reverse(s.begin(), s.end());
+    os << s;
+
+    return os;
 }
   ]], {}, { delimiters = "@$" })),
 
   s("lca", fmt([[
-template <class T = int>
 struct Lca {
-    std::vector<std::vector<T>> adj;
-    std::vector<std::vector<int>> p;
-    std::vector<T> dep;
-    T n;
-    T root;
-    int max_pow;
+    std::vector<std::vector<int>> adj;
+    std::vector<std::vector<int>> par;
+    std::vector<int> dep;
+    int n;
+    int root;
+    int U;
     // in case size = 1
-    Lca(T size, T _root)
+    Lca(int size, int _root)
         : adj(size + 1),
           dep(size + 1),
           n(size),
           root(_root),
-          max_pow((int)log2(size) + 1) {
-        p = std::vector<std::vector<int>>(size + 1,
-                                          std::vector<int>(max_pow + 1));
-    }
-    Lca(T size)
-        : adj(size + 1), dep(size + 1), n(size), max_pow((int)log2(size) + 1) {
-        p = std::vector<std::vector<int>>(size + 1,
-                                          std::vector<int>(max_pow + 1));
+          U(std::log2(size) + 1) {
+        par.assign(size + 1, std::vector<int>(U + 1));
+        dep[root] = 1;
     }
     void add_edge(int u, int v) { adj[u].emplace_back(v); }
     void add_edges(int u, int v) {
-        adj[u].emplace_back(v);
-        adj[v].emplace_back(u);
+        add_edge(u, v);
+        add_edge(v, u);
     }
-    T up(T x, int k) {
-        for (int i = 0; k; i++, k >>= 1) {
+    int up(int x, int k) {
+        for (int i = 0; k; k /= 2, i++) {
             if (k & 1) {
-                x = p[x][i];
+                x = par[x][i];
             }
         }
         return x;
     }
-    void dfs(T now, T pre = -1, int d = 0) {
-        dep[now] = d;
-        if (pre != -1) {
-            p[now][0] = pre;
-        }
-        for (auto to : adj[now]) {
-            if (to != pre) {
-                dfs(to, now, d + 1);
+    void dfs(int u) {
+        for (auto v : adj[u]) {
+            if (!dep[v]) {
+                par[v][0] = u;
+                dep[v] = dep[u] + 1;
+                dfs(v);
             }
         }
     }
-    void init() {
+    void build() {
         dfs(root);
-        for (int i = 1; i <= max_pow; i++) {
-            for (T j = 1; j <= n; j++) {
-                p[j][i] = p[ p[j][i - 1] ][i - 1];
+        for (int i = 1; i <= U; i++) {
+            for (int j = 1; j <= n; j++) {
+                par[j][i] = par[ par[j][i - 1] ][i - 1];
             }
         }
     }
-    T operator()(T lhs, T rhs) {
-        if (dep[lhs] < dep[rhs]) {
-            std::swap(lhs, rhs);
+    int operator()(int x, int y) {
+        if (dep[x] < dep[y]) {
+            std::swap(x, y);
         }
-        int diff = dep[lhs] - dep[rhs];
-        lhs = up(lhs, diff);
-        if (lhs == rhs) {
-            return lhs;
+        int diff = dep[x] - dep[y];
+        x = up(x, diff);
+        if (x == y) {
+            return x;
         }
-        for (int i = max_pow; i >= 0; i--) {
-            T lp = p[lhs][i];
-            T rp = p[rhs][i];
+        for (int i = U; i >= 0; i--) {
+            int lp = par[x][i];
+            int rp = par[y][i];
             if (lp != rp) {
-                lhs = lp;
-                rhs = rp;
+                x = lp;
+                y = rp;
             }
         }
-        return p[lhs][0];
+        return par[x][0];
     }
 };
 ]], {}, { delimiters = "@#" })),
 
   s("fenwick", fmt([[
-template <class Info>
+template <class T>
 struct Fenwick {
-    Fenwick(int n_ = 0) : n(n_) { info.assign(n + 2, Info()); }
+    Fenwick(int n_ = 0) : n(n_) { info.assign(n + 2, T()); }
 
-    void add(int p, Info x) {
+    void add(int p, T x) {
         while (p <= n) {
             info[p] = info[p] + x;
             p += p & -p;
         }
     }
 
-    Info sum(int l, int r) { return sum(r) - sum(l - 1); }
-    Info sum(int p) {
-        Info s = Info();
+    T sum(int l, int r) { return sum(r) - sum(l - 1); }
+    T sum(int p) {
+        T s = T();
         while (p) {
             s = s + info[p];
             p -= p & -p;
@@ -938,7 +970,7 @@ struct Fenwick {
         return s;
     }
 
-    int sumQuery(Info x) {
+    int sumQuery(T x) {
         int pos = 0, l = 1;
         while (1 << l <= n) {
             l++;
@@ -956,16 +988,10 @@ struct Fenwick {
 
 private:
     int n;
-    std::vector<Info> info;
+    std::vector<T> info;
 };
 
-struct Int {
-    @$
-    friend Int operator+(const Int &lhs, const Int &rhs) {
-        @$
-    }
-};
-]], { i(1, "int v = 0;"), i(2, "return {lhs.v + rhs.v};") }, { delimiters = "@$" })),
+]], {}, { delimiters = "@$" })),
 
   s("segtree", fmt([[
 template <class Info>
