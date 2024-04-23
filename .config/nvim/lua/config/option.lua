@@ -1,6 +1,5 @@
 --basic settings
 vim.g.mapleader = ' '
-
 vim.o.termguicolors = true
 vim.o.syntax = true
 vim.o.syntax = "enable"
@@ -16,12 +15,16 @@ vim.o.wildmenu = true
 vim.opt.shortmess:append({ c })
 vim.o.compatible = false
 vim.o.encoding = 'utf-8'
+
 --help
 vim.o.helpheight = 999999999
 
+--mouse
+vim.o.mouse = 'a'
+
 --disable netrw
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
+-- vim.g.loaded_netrw = 1
+-- vim.g.loaded_netrwPlugin = 1
 
 --undo history
 vim.o.undodir = "/home/tlp/.nvimundohistory"
@@ -89,8 +92,8 @@ let &t_SR.="\e[3 q"
 let &t_EI.="\e[1 q"
 ]])
 
---local signs = { Error = "󰅚 ", Warn = "󰀪 ", Hint = "󰌶 ", Info = " " }
-local signs = { Error = "❌", Warn = "⚠️ ", Hint = "💡", Info = "ℹ️ " }
+--local signs = { Error = "󰅚 ", Warn = "󰀪 ", Hint = "󰌶", Info = " " }
+local signs = { Error = "❌", Warn = "🆖", Hint = "💡", Info = "✅️" }
 for type, icon in pairs(signs) do
   local hl = "DiagnosticSign" .. type
   vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
