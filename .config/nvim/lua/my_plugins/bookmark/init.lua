@@ -14,4 +14,4 @@ local function open_path()
   end
 end
 
-vim.keymap.set("n", "<leader>mb", open_path, { silent = true, noremap = true })
+vim.keymap.set("n", "<leader>mb", open_path, { silent = true, noremap = true, desc = "bookmark"})
