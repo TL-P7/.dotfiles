@@ -70,7 +70,7 @@ return {
       local cmp_autopairs = require("nvim-autopairs.completion.cmp")
       local lspkind = require("lspkind")
       -- require("luasnip.loaders.from_snipmate").lazy_load({ { path = "~/.config/nvim/snippets" } })
-      --require("luasnip.loaders.from_vscode").lazy_load()
+      require("luasnip.loaders.from_vscode").lazy_load()
       cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
       cmp.setup({
         snippet = {
