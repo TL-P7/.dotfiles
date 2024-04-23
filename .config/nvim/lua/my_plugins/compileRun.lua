@@ -31,7 +31,10 @@ local compileRun = function()
   elseif ft == "lua" then
     split()
     vim.cmd("term lua %")
+  elseif ft == "go" then
+    split()
+    vim.cmd("term go run %")
   end
 end
 
-vim.keymap.set("n", "<F11>", compileRun, { silent = true, noremap = true })
+vim.keymap.set("n", "<leader>rr", compileRun, { silent = true, noremap = true })
