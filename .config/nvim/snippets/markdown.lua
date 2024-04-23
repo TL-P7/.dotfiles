@@ -59,11 +59,6 @@ return {
   s({ trig = "\\sp", snippetType = "autosnippet" }, t("\\space")),
   s({ trig = "\\qm", snippetType = "autosnippet" }, t("\\qmod")),
   s({ trig = "\\Ra", snippetType = "autosnippet" }, t("\\Rightarrow")),
-  s({ trig = "\\ap", snippetType = "autosnippet" }, t("\\alpha")),
-  s({ trig = "\\bt", snippetType = "autosnippet" }, t("\\beta")),
-  s({ trig = "\\de", snippetType = "autosnippet" }, t("\\delta")),
-  s({ trig = "\\De", snippetType = "autosnippet" }, t("\\Delta")),
-  s({ trig = "\\omg", snippetType = "autosnippet" }, t("\\omega")),
   s(
     { trig = "\\fr", snippetType = "autosnippet" },
     fmta(
