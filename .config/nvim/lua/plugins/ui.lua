@@ -6,12 +6,12 @@ return {
     config = function()
       -- ANSI shadow
       local logo = [[
- ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗
- ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║
- ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║
- ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║
- ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║
- ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝
+███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗
+████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║
+██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║
+██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║
+██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║
+╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝
       ]]
       logo = "\n\n" .. logo .. "\n"
       require("dashboard").setup {
@@ -58,15 +58,15 @@ return {
               key = "f",
             },
             {
-              desc = " bookmarks",
+              desc = " Mason",
               group = "DiagnosticHint",
-              action = "",
-              key = "b",
+              action = "MasonUpdate",
+              key = "m",
             },
             {
               desc = " dotfiles",
               group = "Number",
-              action = "Telescope dotfiles",
+              action = "lua require('telescope.builtin').find_files({ cwd = vim.fn.getenv('HOME') .. '/.dotfiles', hidden = true })",
               key = "d",
             },
           },
@@ -93,7 +93,8 @@ return {
   {
     "akinsho/bufferline.nvim",
     event = "BufEnter",
-    version = "*",
+    -- version = "*",
+    branch = "main",
     dependencies = { "nvim-tree/nvim-web-devicons", "moll/vim-bbye" },
     config = function()
       require("bufferline").setup {
