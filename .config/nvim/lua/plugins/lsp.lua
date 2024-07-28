@@ -40,7 +40,7 @@ return {
   {
     "VonHeikemen/lsp-zero.nvim",
     lazy = false,
-    branch = "v2.x",
+    branch = "v3.x",
     dependencies = {
       {
         "williamboman/mason-lspconfig.nvim",
@@ -73,7 +73,8 @@ return {
         "neovim/nvim-lspconfig",
         lazy = false,
         config = function()
-          require("neodev").setup({})
+          require("lsp-zero").extend_lspconfig()
+          require("neodev").setup()
           local lspconfig = require("lspconfig")
           lspconfig['lua_ls'].setup({
             settings = {
@@ -84,15 +85,24 @@ return {
               }
             }
           })
-          lspconfig['clangd'].setup({})
+          lspconfig['clangd'].setup({
+            cmd = { "clangd", "--clang-tidy", "--background-index", "--all-scopes-completion" },
+          })
           lspconfig['bashls'].setup({
             enableSourceErrorDiagnostics = true,
           })
           lspconfig['pyright'].setup({})
           lspconfig['html'].setup({})
-          lspconfig['kotlin_language_server'].setup({})
+          lspconfig['kotlin_language_server'].setup({
+            cmd = { "kotlin-language-server" },
+            filetypes = { "kotlin" },
+            root_dir = function(fname)
+              return lspconfig.util.root_pattern("settings.gradle.kts", "build.gradle.kts", "pom.xml")(fname) or
+                  lspconfig.util.find_git_ancestor(fname) or lspconfig.util.path.dirname(fname)
+            end
+          })
 
-          vim.api.nvim_create_autocmd('LspAttach', {
+          vim.api.nvim_create_autocmd('BufEnter', {
             desc = 'LSP actions',
             callback = function(event)
               local opts = { buffer = event.buf, noremap = true, nowait = true }
@@ -111,14 +121,14 @@ return {
               vim.keymap.set('n', '<space>wl', function()
                 print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
               end, opts)
-              vim.keymap.set({ 'n', 'x' }, '<C-f>', function() vim.lsp.buf.format({ async = true }) end, opts)
+              vim.keymap.set({ 'n', 'x' }, '<C-f>', "<Cmd>GuardFmt<CR>", opts)
             end
           })
         end,
       }
     },
     config = function()
-      local lsp = require("lsp-zero").preset({})
+      local lsp = require("lsp-zero")
       lsp.on_attach(function(client, bufnr)
         lsp.default_keymaps({ buffer = bufnr })
       end)
@@ -141,5 +151,40 @@ return {
       position = "right",
       use_diagnostic_signs = true,
     },
-  }
+  },
+  {
+    "nvimdev/guard.nvim",
+    config = function()
+      local ft = require("guard.filetype")
+      ft("c"):fmt("clang-format")
+      ft("sh"):fmt({
+        cmd = "shfmt",
+        args = { "-i", "4" },
+      })
+      ft("python"):fmt("black")
+      ft("javascript,json,markdown"):fmt("prettier")
+      ft("*^cpp"):lint("codespell")
+      -- Assuming you have guard-collection
+      -- ft('lang'):fmt('format-tool-1')
+      --     :append('format-tool-2')
+      --     :env(env_table)
+      --     :lint('lint-tool-1')
+      --     :extra(extra_args)
+
+      -- Call setup() LAST!
+      require('guard').setup({
+        -- Choose to format on every write to a buffer
+        fmt_on_save = false,
+        -- Use lsp if no formatter was defined for this filetype
+        lsp_as_default_formatter = true,
+        -- By default, Guard writes the buffer on every format
+        -- You can disable this by setting:
+        -- save_on_fmt = false,
+      })
+    end,
+    -- Builtin configuration, optional
+    dependencies = {
+      "nvimdev/guard-collection",
+    },
+  },
 }
