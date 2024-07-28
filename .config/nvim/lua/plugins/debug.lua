@@ -32,7 +32,7 @@ return {
 
           local dap_breakpoint = {
             error = {
-              text = "",
+              text = "🔴",
               texthl = "DapBreakpoint",
               linehl = "DapBreakpoint",
               numhl = "DapBreakpoint",
@@ -103,9 +103,7 @@ return {
     },
 
     config = function()
-      require("dapui").setup({
-
-      })
+      require("dapui").setup()
     end
   }
 }
