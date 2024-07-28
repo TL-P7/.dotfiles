@@ -12,6 +12,7 @@ return {
       vim.keymap.set("n", "<leader>ct", "<Cmd>colorscheme tokyonight-moon<CR>")
     end,
   },
+
   {
     "tanvirtin/monokai.nvim",
     config = function()
@@ -21,10 +22,18 @@ return {
       -- require('monokai').setup { palette = require('monokai').ristretto }
     end
   },
+
   {
     "Enonya/yuyuko.vim",
     config = function()
       vim.keymap.set("n", "<leader>cy", "<Cmd>colorscheme yuyuko<CR>")
+    end
+  },
+
+  {
+    "norcalli/nvim-colorizer.lua",
+    config = function()
+      require("colorizer").setup()
     end
   }
 }
