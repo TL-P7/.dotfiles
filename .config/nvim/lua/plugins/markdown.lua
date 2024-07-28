@@ -21,6 +21,7 @@ return {
   },
   {
     "Kicamon/im-switch.nvim",
+    ft = { "markdown", "text" },
     config = function()
       require("im-switch").setup()
     end
