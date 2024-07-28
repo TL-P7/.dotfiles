@@ -20,7 +20,7 @@ local mappings = {
     from = "<C-S-k>",
     to = function()
       if vim.fn.line('.') ~= 1 then
-        vim.cmd([[norm kddpk]])
+        vim.cmd.norm("kddpk")
       end
     end
   },
@@ -30,12 +30,16 @@ local mappings = {
     to = function()
       local current_line = vim.fn.line('.')
       if current_line == vim.fn.line('$') - 1 then
-        vim.cmd([[norm ddp]])
+        vim.cmd.norm("ddp")
       elseif current_line ~= vim.fn.line('$') then
-        vim.cmd([[norm jddkPj]])
+        vim.cmd.norm("jddkPj")
       end
     end
   },
+
+  -- commenting
+  { mode = "n",          from = "<C-/>",      to = function() vim.cmd.norm("gc$") end },
+  { mode = "v",          from = "<C-/>",      to = function() vim.cmd.norm("gc") end },
 
   -- nohl
   { mode = "n",          from = "<Esc>u",     to = "<Cmd>nohlsearch<CR>",                  opt = silent },
