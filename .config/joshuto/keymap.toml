@@ -72,6 +72,7 @@ keymap = [
   { keys = ["y", "p"], commands = ["copy_filepath"] },
   { keys = ["y", "a"], commands = ["copy_filepath --all-selected=true"] },
   { keys = ["y", "d"], commands = ["copy_dirpath"] },
+  { keys = ["Y"], commands = ["copy_files --all-selected=true"] },
 
   { keys = ["p", "l"], commands = ["symlink_files --relative=false"] },
   { keys = ["p", "L"], commands = ["symlink_files --relative=true"] },
