@@ -70,7 +70,6 @@ return {
 
     using ll = long long;
     using PII = std::pair<int, int>;
-    using ld = long double;
 
     int main() {
         std::ios::sync_with_stdio(false);
@@ -85,7 +84,6 @@ return {
 
     using ll = long long;
     using PII = std::pair<int, int>;
-    using ld = long double;
 
     void solve() {
         @$
@@ -170,15 +168,39 @@ unsigned int bit_ceil(unsigned int n) {
 ]], {}, { delimiters = "@#" })),
 
   s("kmp", fmt([[
-    for (int i = 1, j = 0; i < n; i++) {
-        while (j && p[i] != p[j]) {
+std::vector<int> next(std::string &s) {
+    const int N = s.size();
+    std::vector<int> next(N + 1);
+    for (int i = 1, j = 0; i < N; i++) {
+        while (j && s[i] != s[j]) {
             j = next[j];
         }
-        if (p[i] == p[j]) {
+        if (s[i] == s[j]) {
             j++;
         }
         next[i + 1] = j;
     }
+
+    return next;
+}
+
+std::vector<int> kmp(std::string &r, std::string &s) {
+    const int N = r.size(), M = s.size();
+    std::vector<int> n = next(s);
+    for (int i = 0, j = 0; i < N; i++) {
+        while (j && r[i] != s[j]) {
+            j = n[j];
+        }
+        if (r[i] == s[j]) {
+            j++;
+        }
+        n[i + 1] = j;
+        if (j == M) {
+            j = n[j];
+        }
+    }
+    return n;
+}
   ]], {}, { delimiters = "@$" })),
 
   s("minimal_string", fmt([[
@@ -326,13 +348,9 @@ public:
     Mint(ll x) : _x(x % _mod) { norm(x); }
     explicit Mint() : _x(0) {}
 
-    static ll getmod() {
-        return _mod;
-    }
+    static ll mod() { return _mod; }
 
-    constexpr ll val() const {
-        return _x;
-    }
+    constexpr ll val() { return _x; }
 
     constexpr Mint operator-() { return Mint(-_x); }
     constexpr Mint operator+() { return Mint(_x); }
@@ -419,7 +437,8 @@ public:
         norm(mint._x %= _mod);
         return is;
     }
-    friend constexpr std::ostream &operator<<(std::ostream &os, const Mint &mint) {
+    friend constexpr std::ostream &operator<<(std::ostream &os,
+                                              const Mint &mint) {
         return os << mint._x;
     }
 
@@ -446,8 +465,7 @@ public:
     Mint(ll x, ll mod) : _x(x) { _mod = mod, norm(x %= mod); }
     explicit Mint() : _x(0) {}
 
-    static ll _mod;
-    static ll getmod() { return _mod; }
+    static ll mod() { return _mod; }
     static void setmod(ll mod) { _mod = mod; }
 
     ll val() const { return _x; }
@@ -531,7 +549,7 @@ public:
         return ans;
     }
 
-    Mint inv() const { return this->pow(getmod() - 2); }
+    Mint inv() const { return this->pow(mod() - 2); }
 
     friend std::istream &operator>>(std::istream &is, Mint &mint) {
         is >> mint._x;
@@ -543,6 +561,7 @@ public:
     }
 
 private:
+    static ll _mod;
     ll _x;
     static ll norm(ll &x) {
         if (x < 0) {
@@ -830,9 +849,9 @@ struct Comb {
         _n = n;
     }
     Z binom(int n, int k) {
-        assert(_n >= n && n >= k && k >= 0);
+        assert(n >= k && k >= 0);
         init(n);
-        return _fac[n] * _facinv[n] * _facinv[n - k];
+        return _fac[n] * _facinv[k] * _facinv[n - k];
     }
 
 private:
@@ -840,11 +859,11 @@ private:
     std::vector<Z> _fac;
     std::vector<Z> _inv;
     std::vector<Z> _facinv;
-};
+} comb;
   ]], {}, { delimiters = "@$" })),
 
   s("rw", fmt([[
-std::istream &operator<<(std::istream &is, __int128 x) {
+std::istream &operator>>(std::istream &is, __int128 &x) {
     x = 0;
     char sign = 1;
     std::string s;
@@ -859,7 +878,6 @@ std::istream &operator<<(std::istream &is, __int128 x) {
     return is;
 }
 
-template <typename T>
 std::ostream &operator<<(std::ostream &os, __int128 x) {
     if (x < 0) {
         os << "-";
@@ -1270,7 +1288,6 @@ private:
 
 struct Tag {
     @$
-    Tag() = default;
     void apply(const Tag &t) {
         @$
     }
@@ -1278,7 +1295,6 @@ struct Tag {
 
 struct Info {
     @$
-    Info() = default;
     friend Info operator+(const Info &lhs, const Info &rhs) {
         @$
     }

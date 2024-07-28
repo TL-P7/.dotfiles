@@ -44,16 +44,6 @@ return {
   s("url", { t("["), i(1), t("]("), i(2), t(")") }),
   s("urlt", { t("["), i(1), t("]("), i(2), t('"'), i(3), t('")') }),
   s("img", { t("!["), i(1), t("]("), i(2), t(")") }),
-  s("cbash", {
-    t({ "```bash", "" }),
-    i(1),
-    t({ "", "```" }),
-  }),
-  s("ccpp", {
-    t({ "```cpp", "" }),
-    i(1),
-    t({ "", "```" }),
-  }),
   -- math
   s({ trig = "\\eq", snippetType = "autosnippet" }, t("\\equiv")),
   s({ trig = "\\sp", snippetType = "autosnippet" }, t("\\space")),
