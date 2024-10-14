@@ -75,6 +75,7 @@ local mappings = {
     opt = { desc = "joshuto" }
   },
   { mode = "n", from = "<leader>mg", to = function() require('telescope').extensions.lazygit.lazygit() end, opt = { desc = "lazygit" } },
+  { mode = "n", from = "<leader>gg", to = "<Cmd>LazyGit<CR>",                                               opt = { desc = "lazygit" } },
 
   --CompetiTest
   { mode = "n", from = "<leader>rt", to = "<Cmd>CompetiTest run<CR>" },
