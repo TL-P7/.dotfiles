@@ -168,7 +168,7 @@ unsigned int bit_ceil(unsigned int n) {
 ]], {}, { delimiters = "@#" })),
 
   s("kmp", fmt([[
-std::vector<int> next(std::string &s) {
+std::vector<int> next(const std::string &s) {
     const int N = s.size();
     std::vector<int> next(N + 1);
     for (int i = 1, j = 0; i < N; i++) {
@@ -184,7 +184,7 @@ std::vector<int> next(std::string &s) {
     return next;
 }
 
-std::vector<int> kmp(std::string &r, std::string &s) {
+std::vector<int> kmp(const std::string &r, const std::string &s) {
     const int N = r.size(), M = s.size();
     std::vector<int> n = next(s);
     for (int i = 0, j = 0; i < N; i++) {
@@ -1356,5 +1356,12 @@ ll exgcd(ll a, ll b, ll &x, ll &y) {
 
     return gcd;
 }
-  ]], {}, { delimiters = "@$" }))
+  ]], {}, { delimiters = "@$" })),
+
+  -- construction
+  s("head", {
+    t({ "#pragma once", "", "#ifndef " ..
+    vim.fn.expand("%:r"):upper() ..
+    "__H", "#define " .. vim.fn.expand("%:r"):upper() .. "__H", "", "class " })
+    , i(1, vim.fn.expand("%:r")), t({ " {};", "", "#endif" }) }),
 }
