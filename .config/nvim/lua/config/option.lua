@@ -11,7 +11,6 @@ vim.o.autochdir = true
 vim.o.swapfile = false
 vim.o.wrap = true
 vim.o.wildmenu = true
-vim.opt.shortmess:append({ C })
 vim.o.compatible = false
 vim.o.encoding = 'utf-8'
 
@@ -52,7 +51,7 @@ vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
       vim.o.tabstop = 4
       vim.o.softtabstop = 4
       vim.o.shiftwidth = 4
-    elseif ft == 'lua' or ft == 'vim' then
+    elseif ft == 'lua' or ft == 'vim' or ft == 'javascript' then
       vim.o.tabstop = 2
       vim.o.softtabstop = 2
       vim.o.shiftwidth = 2
