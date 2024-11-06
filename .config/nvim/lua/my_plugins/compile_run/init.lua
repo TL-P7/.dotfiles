@@ -24,6 +24,7 @@ local compileRun = function()
     split()
     vim.cmd("term time python3 %")
   elseif ft == "sh" then
+    split()
     vim.cmd("term time bash %")
   elseif ft == "markdown" then
     vim.cmd("MarkdownPreview")
@@ -40,6 +41,9 @@ local compileRun = function()
     vim.cmd("term kotlinc % -include-runtime -d %<.jar && time java -jar %<.jar")
   elseif ft == "html" then
     vim.cmd("silent !firefox % &")
+  else if ft == "typst" then
+      vim.cmd('TypstPreview')
+    end
   end
 end
 
