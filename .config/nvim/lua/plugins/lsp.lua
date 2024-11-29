@@ -103,21 +103,18 @@ return {
             }
           })
           lspconfig['ts_ls'].setup({})
+          lspconfig['gopls'].setup({
+            settings = {
+              gopls = {
+                gofumpt = true,
+                staticcheck = true,
+              },
+            },
+          })
           lspconfig['bashls'].setup({
             enableSourceErrorDiagnostics = true,
           })
-          lspconfig['pyright'].setup({
-            settings = {
-              python = {
-                analysis = {
-                  inlayHints = {
-                    variableTypes = true,       -- 显示变量类型的 inlay hints
-                    functionReturnTypes = true, -- 显示函数返回类型的 inlay hints
-                  },
-                },
-              },
-            }
-          })
+          lspconfig['pyright'].setup({})
           lspconfig['html'].setup({})
           lspconfig['kotlin_language_server'].setup({
             cmd = { 'kotlin-language-server' },
@@ -200,6 +197,8 @@ return {
       })
       ft('python'):fmt('black')
       ft('javascript,json,markdown'):fmt('prettier')
+      ft('go'):fmt('gofumpt')
+
       -- ft('typst'):fmt('typstfmt')
       -- ft('*'):lint('codespell')
 

@@ -20,10 +20,10 @@ return {
     end,
   },
   {
-    "Kicamon/im-switch.nvim",
-    ft = { "markdown", "text" },
+    "keaising/im-select.nvim",
+    ft = { "markdown", "typst" },
     config = function()
-      require("im-switch").setup()
-    end
+      require("im_select").setup({})
+    end,
   }
 }

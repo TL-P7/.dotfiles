@@ -70,7 +70,7 @@ return {
               key = "d",
             },
           },
-          footer = { "What is mind? No matter. What is matter? Never mind." },
+          -- footer = { "What is mind? No matter. What is matter? Never mind." },
         },
       }
     end,
@@ -124,12 +124,13 @@ return {
   {
     "folke/noice.nvim",
     event = "VeryLazy",
-    config = {
+    opts = {
       lsp = {
         override = {
           ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
           ["vim.lsp.util.stylize_markdown"] = true,
           ["cmp.entry.get_documentation"] = true,
+          ["vim.lsp.handlers.showMessage"] = false, -- 禁用 showMessage 提示
         },
       },
       presets = {
@@ -138,11 +139,6 @@ return {
         inc_rename = false,
         lsp_doc_border = false,
       },
-    },
-    opts = {
-      cmdline = {
-      }
-      -- add any options here
     },
     dependencies = {
       -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
