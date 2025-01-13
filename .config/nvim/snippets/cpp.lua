@@ -580,25 +580,23 @@ template <class T>
 struct Matrix {
     Matrix() : r(0), c(0) {}
     explicit Matrix(int r, int c, std::vector<std::vector<T>> &m)
-        : r(r), c(c), _m(m) {}
+        : r(r), c(c), m(m) {}
 
     explicit Matrix(int n) : Matrix(n, n) {}
     explicit Matrix(int r, int c) : r(r), c(c) {
-        _m = std::vector<std::vector<T>>(r, std::vector<T>(c));
+        m = std::vector<std::vector<T>>(r, std::vector<T>(c));
     }
-    Matrix(std::vector<std::vector<T>> &m) : _m(m) {
+    Matrix(std::vector<std::vector<T>> &m) : m(m) {
         assert(m.size() > 0 && m[0].size() > 0);
-        r = m.size() - 1;
-        c = m[0].size() - 1;
+        r = m.size();
+        c = m[0].size();
     }
-    constexpr T at(int i, int j) const {
-        return _m[i][j];
-    }
-    constexpr T &get(int i, int j) { return _m[i][j]; }
+    constexpr T at(int i, int j) const { return m[i][j]; }
+    constexpr T &get(int i, int j) { return m[i][j]; }
     static constexpr Matrix identity(int n) {
         Matrix ret(n);
         for (int i = 0; i < n; i++) {
-            ret._m[i][i] = 1;
+            ret.m[i][i] = 1;
         }
         return ret;
     }
@@ -626,10 +624,10 @@ struct Matrix {
         Matrix ret(lhs.r, rhs.c);
         for (int i = 0; i < lhs.r; i++) {
             for (int j = 0; j < lhs.c; j++) {
-                if (lhs._m[i][j] != 0) {
+                if (lhs.m[i][j] != 0) {
                     for (int k = 0; k < rhs.c; k++) {
-                        if (rhs._m[j][k] != 0) {
-                            ret._m[i][k] += lhs._m[i][j] * rhs._m[j][k];
+                        if (rhs.m[j][k] != 0) {
+                            ret.m[i][k] |= lhs.m[i][j] & rhs.m[j][k];
                         }
                     }
                 }
@@ -638,7 +636,16 @@ struct Matrix {
         return ret;
     }
 
-    std::vector<std::vector<T>> _m;
+    friend std::ostream &operator<<(std::ostream &os, Matrix &a) {
+        for (int i = 0; i < a.r; i++) {
+            for (int j = 0; j < a.c; j++) {
+                os << a.m[i][j] << " \n"[j == a.c - 1];
+            }
+        }
+        return os;
+    }
+
+    std::vector<std::vector<T>> m;
     int r, c;
 };
 ]], {}, { delimiters = "@$" })),
