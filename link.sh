@@ -18,6 +18,12 @@ ln -s ~/.dotfiles/.config/picom ~/.config
 rm -rf ~/.config/chadwm
 ln -s ~/.dotfiles/.config/chadwm ~/.config
 
+rm -rf ~/.config/hypr
+ln -s ~/.dotfiles/.config/hypr ~/.config
+
+rm -rf ~/.config/waybar
+ln -s ~/.dotfiles/.config/waybar ~/.config
+
 rm -rf ~/.config/joshuto
 ln -s ~/.dotfiles/.config/joshuto ~/.config
 
