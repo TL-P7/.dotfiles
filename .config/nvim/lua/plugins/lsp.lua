@@ -98,9 +98,13 @@ return {
                   ParameterNames = true,
                   DeducedTypes = true,
                 },
-                fallbackFlags = { "-std=c++20" },
               },
-            }
+            },
+            init_options = {
+              fallbackFlags = {
+                '-std=c++17',
+              },
+            },
           })
           lspconfig['ts_ls'].setup({})
           lspconfig['gopls'].setup({
@@ -121,12 +125,19 @@ return {
             filetypes = { 'kotlin' },
             root_dir = function(fname)
               return lspconfig.util.root_pattern('settings.gradle.kts', 'build.gradle.kts', 'pom.xml')(fname) or
-                  lspconfig.util.find_git_ancestor(fname) or lspconfig.util.path.dirname(fname)
+                  vim.fs.dirname(vim.fs.find('.git', { path = fname, upward = true })[1])
             end
           })
           lspconfig['markdown_oxide'].setup({})
           lspconfig['tinymist'].setup({
+            -- offset_encoding = 'utf-8',
+            lsp_as_default_formatter = true,
             single_file_support = true,
+            settings = {
+              formatterMode = 'typstfmt',
+              exportPdf = "onType",
+              outputPath = "$root/target/$dir/$name",
+            },
             on_attach = function(client)
               client.server_capabilities.semanticTokensProvider = nil
             end,
@@ -136,7 +147,7 @@ return {
             vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled(), nil)
           end, { desc = "Toggle inlay hints" })
 
-          vim.api.nvim_create_autocmd('BufEnter', {
+          vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
             desc = 'LSP actions',
             callback = function(event)
               local opts = { buffer = event.buf, noremap = true, nowait = true }
@@ -155,7 +166,11 @@ return {
               vim.keymap.set('n', '<space>wl', function()
                 print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
               end, opts)
-              vim.keymap.set({ 'n', 'x' }, '<C-f>', '<Cmd>Guard fmt<CR>', opts)
+              if vim.bo.filetype == 'typst' then
+                vim.keymap.set({ 'n', 'x' }, '<C-f>', function() vim.lsp.buf.format({ buf = 0 }) end, opts)
+              else
+                vim.keymap.set({ 'n', 'x' }, '<C-f>', '<Cmd>Guard fmt<CR>', opts)
+              end
             end
           })
         end,
@@ -196,10 +211,10 @@ return {
         args = { '-i', '4' },
       })
       ft('python'):fmt('black')
-      ft('javascript,json,markdown'):fmt('prettier')
+      ft('javascript,json,markdown,yaml'):fmt('prettier')
       ft('go'):fmt('gofumpt')
+      -- ft('make'):lint('checkmake')
 
-      -- ft('typst'):fmt('typstfmt')
       -- ft('*'):lint('codespell')
 
       vim.g.guard_config = {

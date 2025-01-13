@@ -27,7 +27,6 @@ require("lazy").setup({
   require("plugins.debug"),
   require("plugins.git"),
   require("plugins.undo"),
-  require("plugins.tex"),
   require("plugins.translator"),
   require("plugins.telescope"),
   require("plugins.which-key"),

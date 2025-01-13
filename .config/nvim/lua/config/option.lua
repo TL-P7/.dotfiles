@@ -43,6 +43,7 @@ filetype plugin indent on
 vim.o.smartindent = true
 vim.o.autoindent = true
 
+vim.filetype.add({ extension = { ejs = 'html' } })
 vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
   callback = function()
     local ft = vim.bo.filetype
@@ -55,6 +56,10 @@ vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
       vim.o.tabstop = 2
       vim.o.softtabstop = 2
       vim.o.shiftwidth = 2
+    elseif ft == 'typst' then
+      vim.o.tabstop = 2
+      vim.o.softtabstop = 2
+      vim.o.shiftwidth = 0
     else
       vim.o.tabstop = 4
       vim.o.softtabstop = 4
@@ -62,6 +67,16 @@ vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
     end
   end
 })
+
+
+vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' },
+  {
+    pattern = '*.typ',
+    callback = function()
+      vim.opt.commentstring = "// %s"
+    end
+  }
+)
 
 
 vim.o.list = true

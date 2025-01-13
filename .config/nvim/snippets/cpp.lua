@@ -386,7 +386,6 @@ public:
     }
     constexpr Mint &operator/=(const Mint &rhs) { return *this *= rhs.inv(); }
 
-    // the same as std::vector v2(v1)
     friend constexpr Mint operator+(const Mint lhs, const Mint rhs) {
         return Mint(lhs) += rhs;
     }
@@ -504,7 +503,6 @@ public:
     }
     Mint &operator/=(const Mint &rhs) { return *this *= rhs.inv(); }
 
-    // the same as std::vector v2(v1)
     friend Mint operator+(const Mint lhs, const Mint rhs) {
         return Mint(lhs) += rhs;
     }
@@ -580,18 +578,18 @@ ll mod;
   s("matrix", fmt([[
 template <class T>
 struct Matrix {
-    Matrix() : _r(0), _c(0) {}
+    Matrix() : r(0), c(0) {}
     explicit Matrix(int r, int c, std::vector<std::vector<T>> &m)
-        : _r(r), _c(c), _m(m) {}
+        : r(r), c(c), _m(m) {}
 
     explicit Matrix(int n) : Matrix(n, n) {}
-    explicit Matrix(int r, int c) : _r(r), _c(c) {
-        _m = std::vector<std::vector<T>>(r + 1, std::vector<T>(c + 1));
+    explicit Matrix(int r, int c) : r(r), c(c) {
+        _m = std::vector<std::vector<T>>(r, std::vector<T>(c));
     }
-    explicit Matrix(std::vector<std::vector<T>> &m) : _m(m) {
+    Matrix(std::vector<std::vector<T>> &m) : _m(m) {
         assert(m.size() > 0 && m[0].size() > 0);
-        _r = m.size() - 1;
-        _c = m[0].size() - 1;
+        r = m.size() - 1;
+        c = m[0].size() - 1;
     }
     constexpr T at(int i, int j) const {
         return _m[i][j];
@@ -599,15 +597,15 @@ struct Matrix {
     constexpr T &get(int i, int j) { return _m[i][j]; }
     static constexpr Matrix identity(int n) {
         Matrix ret(n);
-        for (int i = 0; i <= n; i++) {
+        for (int i = 0; i < n; i++) {
             ret._m[i][i] = 1;
         }
         return ret;
     }
-    constexpr bool square() { return this->_c == this->_r; }
+    constexpr bool square() { return this->c == this->r; }
     constexpr Matrix pow(ll n) {
         assert(this->square());
-        Matrix ret(identity(this->_c));
+        Matrix ret(identity(this->c));
         Matrix temp(*this);
         while (n) {
             if (n & 1) {
@@ -624,12 +622,12 @@ struct Matrix {
     }
 
     friend constexpr Matrix operator*(const Matrix &lhs, const Matrix &rhs) {
-        assert(lhs._c == rhs._r);
-        Matrix ret(lhs._r, rhs._c);
-        for (int i = 0; i <= lhs._r; i++) {
-            for (int j = 0; j <= lhs._c; j++) {
+        assert(lhs.c == rhs.r);
+        Matrix ret(lhs.r, rhs.c);
+        for (int i = 0; i < lhs.r; i++) {
+            for (int j = 0; j < lhs.c; j++) {
                 if (lhs._m[i][j] != 0) {
-                    for (int k = 0; k <= rhs._c; k++) {
+                    for (int k = 0; k < rhs.c; k++) {
                         if (rhs._m[j][k] != 0) {
                             ret._m[i][k] += lhs._m[i][j] * rhs._m[j][k];
                         }
@@ -640,9 +638,8 @@ struct Matrix {
         return ret;
     }
 
-private:
     std::vector<std::vector<T>> _m;
-    int _r, _c;
+    int r, c;
 };
 ]], {}, { delimiters = "@$" })),
 
@@ -1356,6 +1353,60 @@ ll exgcd(ll a, ll b, ll &x, ll &y) {
 
     return gcd;
 }
+  ]], {}, { delimiters = "@$" })),
+
+  s("scc", fmt([[
+struct SCC {
+    int n, idx, cnt;
+    std::vector<std::vector<int>> adj;
+    std::vector<int> dfn, low, bel, stk;
+
+    SCC() {}
+    SCC(int n_) { init(n_); }
+    void init(int n_) {
+        n = n_;
+        adj.assign(n, {});
+        dfn.assign(n, -1);
+        low.resize(n);
+        bel.assign(n, -1);
+        stk.clear();
+        idx = cnt = 0;
+    }
+
+    void addEdge(int u, int v) { adj[u].push_back(v); }
+
+    void tarjan(int x) {
+        dfn[x] = low[x] = idx++;
+        stk.push_back(x);
+        for (auto y : adj[x]) {
+            if (dfn[y] == -1) {
+                tarjan(y);
+                low[x] = std::min(low[x], low[y]);
+            } else if (bel[y] == -1) {
+                low[x] = std::min(low[x], dfn[y]);
+            }
+        }
+
+        if (dfn[x] == low[x]) {
+            int y;
+            do {
+                y = stk.back();
+                bel[y] = cnt;
+                stk.pop_back();
+            } while (y != x);
+            cnt++;
+        }
+    }
+
+    auto work() {
+        for (int i = 0; i < n; i++) {
+            if (dfn[i] == -1) {
+                tarjan(i);
+            }
+        }
+        return bel;
+    }
+};
   ]], {}, { delimiters = "@$" })),
 
   -- construction

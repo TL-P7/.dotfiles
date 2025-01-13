@@ -36,12 +36,12 @@ return {
           end
 
           local ls = require("luasnip")
-          vim.keymap.set({ "i", "s" }, "<C-l>", function()
+          vim.keymap.set({ "i", "s" }, "<C-,>", function()
             if ls.choice_active() then
               ls.change_choice(1)
             end
           end)
-          vim.keymap.set({ "i", "s" }, "<C-h>", function()
+          vim.keymap.set({ "i", "s" }, "<C-.>", function()
             if ls.choice_active() then
               ls.change_choice(-1)
             end
@@ -51,7 +51,7 @@ return {
       },
       "saadparwaiz1/cmp_luasnip",
       {
-        "rafamadriz/friendly-snippets",
+        "rafamadriz/friendly-snippets"
       },
       {
         "zbirenbaum/copilot-cmp",
@@ -79,33 +79,37 @@ return {
           end,
         },
         mapping = cmp.mapping.preset.insert({
-          ["<C-n>"] = cmp.config.disable,
-          ["<C-p>"] = cmp.config.disable,
-          ["<Tab>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-              cmp.select_next_item()
-              -- You could replace the expand_or_jumpable() calls with expand_or_locally_jumpable()
-              -- they way you will only jump inside the snippet region
-            elseif luasnip.expand_or_jumpable() then
-              luasnip.expand_or_jump()
-            elseif has_words_before() then
-              cmp.complete()
+          ["<TAB>"] = cmp.mapping(function(fallback)
+            if luasnip.jumpable(1) then
+              luasnip.jump(1)
             else
               fallback()
             end
           end, { "i", "s" }),
-
-          ["<S-Tab>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-              cmp.select_prev_item()
-            elseif luasnip.jumpable(-1) then
+          ["<S-TAB>"] = cmp.mapping(function(fallback)
+            if luasnip.jumpable(-1) then
               luasnip.jump(-1)
             else
               fallback()
             end
           end, { "i", "s" }),
-          ["<CR>"] = cmp.mapping.confirm({ select = false }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-          ["<C-a>"] = cmp.mapping.complete(),
+          ["<C-n>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_next_item()
+            elseif has_words_before() then
+              cmp.complete()
+            end
+          end, { "i", "s" }),
+
+          ["<C-p>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item()
+            end
+          end, { "i", "s" }),
+          ["<CR>"] = cmp.mapping.confirm({
+            behavior = cmp.ConfirmBehavior.Replace,
+            select = false
+          }),                  -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
           ["<C-j>"] = cmp.mapping.scroll_docs(4),
           ["<C-k>"] = cmp.mapping.scroll_docs(-4),
           ["<C-q>"] = cmp.mapping.close()

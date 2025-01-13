@@ -12,7 +12,7 @@ local compileRun = function()
   vim.cmd("w")
   if ft == "cpp" then
     split()
-    vim.cmd("term g++ % -o %< -std=c++20 -g -Wall -Wextra -Wpedantic && time ./%<")
+    vim.cmd("term g++ % -o %< -std=c++20 -lfmt -g -Wall -Wextra -Wpedantic && time ./%<")
   elseif ft == "c" then
     split()
     if vim.fn.filereadable("Makefile") == 1 then
@@ -41,7 +41,8 @@ local compileRun = function()
     vim.cmd("term kotlinc % -include-runtime -d %<.jar && time java -jar %<.jar")
   elseif ft == "html" then
     vim.cmd("silent !firefox % &")
-  else if ft == "typst" then
+  else
+    if ft == "typst" then
       vim.cmd('TypstPreview')
     end
   end

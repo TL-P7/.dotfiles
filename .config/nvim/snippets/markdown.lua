@@ -50,6 +50,14 @@ return {
   s({ trig = "\\qm", snippetType = "autosnippet" }, t("\\qmod")),
   s({ trig = "\\Ra", snippetType = "autosnippet" }, t("\\Rightarrow")),
   s(
+    { trig = "\\bi", snippetType = "autosnippet" },
+    fmta(
+      [[\binom{<>}{<>}]],
+      { i(1), i(2) },
+      {}
+    )
+  ),
+  s(
     { trig = "\\fr", snippetType = "autosnippet" },
     fmta(
       [[\frac{<>}{<>}]],
@@ -68,7 +76,7 @@ return {
   s(
     { trig = "\\sum", snippetType = "autosnippet" },
     fmta(
-      [[\sum{<>}^{<>}]],
+      [[\sum\limits_{<>}^{<>}]],
       { i(1), i(2) },
       {}
     )

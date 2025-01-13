@@ -10,9 +10,9 @@ local mappings = {
   -- settings for copy and paste
   { mode = "n", from = "<C-e>", to = "<Esc>ggVG" },
   { mode = "v", from = "<C-y>", to = '"+y' },
-  { mode = "i", from = "<C-p>", to = '<Esc>"*pa' },
-  { mode = "v", from = "<C-p>", to = '<Esc>"*p' },
-  { mode = "n", from = "<C-p>", to = '"*p' },
+  { mode = "i", from = "<C-p>", to = '<Esc>"+pa' },
+  { mode = "n", from = "<C-p>", to = '"+p' },
+
 
   -- exchange two lines
   {
@@ -45,7 +45,6 @@ local mappings = {
   { mode = "n",          from = "<Esc>u",     to = "<Cmd>nohlsearch<CR>",                  opt = silent },
 
   -- save file
-  { mode = { "n", "v" }, from = "s",          to = "<Nop>" },
   { mode = "n",          from = "<C-s>",      to = "<Cmd>w<CR>",                           opt = silent },
 
   -- settings for buliding new tabes and splits
