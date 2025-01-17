@@ -1415,6 +1415,50 @@ struct SCC {
     }
 };
   ]], {}, { delimiters = "@$" })),
+  s("spt", fmt([[
+template <class T>
+struct ST {
+    ST() {}
+    ST(int n_) { init(n_); }
+    ST(const std::vector<T> &a) {
+        init(a.size());
+        build(a);
+    }
+    void init(int n_) {
+        n = n_;
+        log = std::log2(n_);
+        f.assign(n, std::vector<T>(log + 1));
+    }
+
+    void build(const std::vector<T> &a) {
+        assert(static_cast<int>(a.size()) == n);
+        for (int i = 0; i < n; i++) {
+            f[i][0] = a[i];
+        }
+        for (int j = 1; j <= log; j++) {
+            for (int i = 0; i + (1 << j) - 1 < n; i++) {
+                f[i][j] = f[i][j - 1] | f[i + (1 << (j - 1))][j - 1];
+            }
+        }
+    }
+
+    T query(int l, int r) {
+        int k = std::log2(r - l + 1);
+        return f[l][k] | f[r - (1 << k) + 1][k];
+    }
+
+    int n, log;
+    std::vector<std::vector<T>> f;
+};
+
+struct Info {
+    int v;
+    friend Info operator|(const Info &a, const Info &b) {
+        return {std::max(a.v, b.v)};
+    }
+};
+]], {}, { delimiters = "@$" })),
+
 
   -- construction
   s("head", {
