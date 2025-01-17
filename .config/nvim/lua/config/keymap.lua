@@ -38,53 +38,42 @@ local mappings = {
   },
 
   -- commenting
-  { mode = "n",          from = "<C-/>",      to = function() vim.cmd.norm("gc$") end },
-  { mode = "v",          from = "<C-/>",      to = function() vim.cmd.norm("gc") end },
+  { mode = "n", from = "<C-/>",      to = function() vim.cmd.norm("gc$") end },
+  { mode = "v", from = "<C-/>",      to = function() vim.cmd.norm("gc") end },
 
   -- nohl
-  { mode = "n",          from = "<Esc>u",     to = "<Cmd>nohlsearch<CR>",                  opt = silent },
+  { mode = "n", from = "<Esc>u",     to = "<Cmd>nohlsearch<CR>",                  opt = silent },
 
   -- save file
-  { mode = "n",          from = "<C-s>",      to = "<Cmd>w<CR>",                           opt = silent },
+  { mode = "n", from = "<C-s>",      to = "<Cmd>w<CR>",                           opt = silent },
 
   -- settings for buliding new tabes and splits
-  { mode = "n",          from = "<C-m>",      to = "<Cmd>tabe<CR>",                        opt = silent },
-  { mode = "n",          from = "<C-h>",      to = "<Cmd>BufferLineCyclePrev<CR>",         opt = silent },
-  { mode = "n",          from = "<C-l>",      to = "<Cmd>BufferLineCycleNext<CR>",         opt = silent },
-  { mode = "n",          from = "<C-q>",      to = "<Cmd>Bdelete<CR>",                     opt = silent },
-  { mode = "n",          from = "<leader>q",  to = "<Cmd>Bdelete<CR>:q<CR>",               opt = silent },
-  { mode = "n",          from = "<M-q>",      to = "<Cmd>q<CR>",                           opt = silent },
-  { mode = "n",          from = "<leader>sr", to = "<Cmd>set splitright<CR>:vsplit<CR>",   opt = silent },
-  { mode = "n",          from = "<leader>sl", to = "<Cmd>set nosplitright<CR>:vsplit<CR>", opt = silent },
-  { mode = "n",          from = "<leader>su", to = "<Cmd>set nosplitbelow<CR>:split<CR>",  opt = silent },
-  { mode = "n",          from = "<leader>sd", to = "<Cmd>set splitbelow<CR>:split<CR>",    opt = silent },
+  { mode = "n", from = "<C-m>",      to = "<Cmd>tabe<CR>",                        opt = silent },
+  { mode = "n", from = "<C-h>",      to = "<Cmd>BufferLineCyclePrev<CR>",         opt = silent },
+  { mode = "n", from = "<C-l>",      to = "<Cmd>BufferLineCycleNext<CR>",         opt = silent },
+  { mode = "n", from = "<C-q>",      to = "<Cmd>Bdelete<CR>",                     opt = silent },
+  { mode = "n", from = "<leader>q",  to = "<Cmd>Bdelete<CR>:q<CR>",               opt = silent },
+  { mode = "n", from = "<M-q>",      to = "<Cmd>q<CR>",                           opt = silent },
+  { mode = "n", from = "<leader>sr", to = "<Cmd>set splitright<CR>:vsplit<CR>",   opt = silent },
+  { mode = "n", from = "<leader>sl", to = "<Cmd>set nosplitright<CR>:vsplit<CR>", opt = silent },
+  { mode = "n", from = "<leader>su", to = "<Cmd>set nosplitbelow<CR>:split<CR>",  opt = silent },
+  { mode = "n", from = "<leader>sd", to = "<Cmd>set splitbelow<CR>:split<CR>",    opt = silent },
 
   -- resize splits
-  { mode = "",           from = "<up>",       to = "<Cmd>res +2<CR>",                      opt = silent },
-  { mode = "",           from = "<down>",     to = "<Cmd>res -2<CR>",                      opt = silent },
-  { mode = "",           from = "<left>",     to = "<Cmd>vertical resize -2<CR>",          opt = silent },
-  { mode = "",           from = "<right>",    to = "<Cmd>vertical resize +2<CR>",          opt = silent },
-
-
-
-  {
-    mode = "n",
-    from = "<leader>mt",
-    to = function() require('joshuto').joshuto() end,
-    opt = { desc = "joshuto" }
-  },
+  { mode = "",  from = "<up>",       to = "<Cmd>res +2<CR>",                      opt = silent },
+  { mode = "",  from = "<down>",     to = "<Cmd>res -2<CR>",                      opt = silent },
+  { mode = "",  from = "<left>",     to = "<Cmd>vertical resize -2<CR>",          opt = silent },
+  { mode = "",  from = "<right>",    to = "<Cmd>vertical resize +2<CR>",          opt = silent },
   { mode = "n", from = "<leader>mg", to = function() require('telescope').extensions.lazygit.lazygit() end, opt = { desc = "lazygit" } },
   { mode = "n", from = "<leader>gg", to = "<Cmd>LazyGit<CR>",                                               opt = { desc = "lazygit" } },
 
   --CompetiTest
   { mode = "n", from = "<leader>rt", to = "<Cmd>CompetiTest run<CR>" },
-  { mode = "n", from = "]a",         to = "<Cmd>CompetiTest add_testcase<CR>" },
-  { mode = "n", from = "]e",         to = "<Cmd>CompetiTest edit_testcase<CR>" },
-  { mode = "n", from = "[e",         to = ":CompetiTest edit_testcase" },
-  { mode = "n", from = "]r",         to = "<Cmd>CompetiTest receive testcases<CR>" },
-  { mode = "n", from = "]s",         to = "<Cmd>CompetiTest show_ui<CR>" },
-  { mode = "n", from = "]d",         to = "<Cmd>CompetiTest delete_testcase<CR>" },
-  { mode = "n", from = "[d",         to = ":CompetiTest delete_testcase" },
+  { mode = "n", from = "<leader>ta", to = "<Cmd>CompetiTest add_testcase<CR>" },
+  { mode = "n", from = "<leader>te", to = "<Cmd>CompetiTest edit_testcase<CR>" },
+  { mode = "n", from = "<leader>tr", to = "<Cmd>CompetiTest receive testcases<CR>" },
+  { mode = "n", from = "<leader>st", to = "<Cmd>CompetiTest show_ui<CR>" },
+  { mode = "n", from = "<leader>td", to = "<Cmd>CompetiTest delete_testcase<CR>" },
 
   --Dashboard
   { mode = "n", from = "<leader>bd", to = "<Cmd>Dashboard<CR>" },

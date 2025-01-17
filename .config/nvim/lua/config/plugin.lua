@@ -31,6 +31,7 @@ require("lazy").setup({
   require("plugins.telescope"),
   require("plugins.which-key"),
   require("plugins.typst"),
+  require("plugins.test")
 })
 
 require("my_plugins.compile_run")
