@@ -69,7 +69,6 @@ return {
     #include <bits/stdc++.h>
 
     using ll = long long;
-    using PII = std::pair<int, int>;
 
     int main() {
         std::ios::sync_with_stdio(false);
@@ -83,7 +82,6 @@ return {
     #include <bits/stdc++.h>
 
     using ll = long long;
-    using PII = std::pair<int, int>;
 
     void solve() {
         @$
@@ -228,78 +226,82 @@ std::vector<int> kmp(const std::string &r, const std::string &s) {
     i = std::min(i, j);
     ]], {}, { delimiters = "@$" })),
 
-  s("noweight_graph", fmta([[
-struct Graph {
-    explicit Graph(int n_) : n(n_), adj(n_ + 1) {}
-    void add_edge(int u, int v) { adj[u].emplace_back(v); }
-    void add_edges(int u, int v) {
-        adj[u].emplace_back(v);
-        adj[v].emplace_back(u);
-    }
-    std::vector<std::vector<int>> adj;
-    int n;
-};
-  ]], {}, { delimiters = "@$" })),
-
-  s("weight_graph", fmta([[
-template <class T>
-struct Graph {
-    explicit Graph(int n_) : n(n_), adj(n_ + 1), wgt(n_ + 1) {}
-    void add_edge(int u, int v, T w) {
-        adj[u].emplace_back(v);
-        wgt[u].emplace_back(w);
-    }
-    void add_edges(int u, int v, T w) {
-        adj[u].emplace_back(v);
-        wgt[u].emplace_back(w);
-        adj[v].emplace_back(u);
-        wgt[v].emplace_back(w);
-    }
-    std::vector<std::vector<int>> adj;
-    std::vector<std::vector<T>> wgt;
-    int n;
-};
-  ]], {}, { delimiters = "@$" })),
-
-  s("ordered_edges", fmta([[
-template <class T>
-struct OEdges {
-    int W;
-    std::vector<std::vector<PII>> edges;
-    explicit OEdges(T maxWeight) : W(maxWeight), edges(maxWeight + 1) {}
-    void add_edge(T weight, int u, int v) { edges[weight].push_back({u, v}); }
-};
-  ]], {}, { delimiters = "@$" })),
-
   s("dsu", fmta([[
-struct Dsu {
-    explicit Dsu() : n(0) {}
-    explicit Dsu(int n_) : n(n_), p(n_ + 1, -1) {}
+struct DSU {
+    explicit DSU() : n(0) {}
+    DSU(int n_) : n(n_), f(n_ + 1), siz(n_ + 1, 1) {
+        std::iota(f.begin(), f.end(), 0);
+    }
 
+    int n;
+    std::vector<int> f, siz;
 
-    int root(int x) { return p[x] < 0 ? x : p[x] = root(p[x]); }
-    // return the root for next merge
+    int root(int x) { return f[x] == x ? x : f[x] = root(f[x]); }
+
     int merge(int x, int y) {
         int rx = root(x), ry = root(y);
         if (rx == ry) {
             return rx;
         }
-        // size_ry > size_rx
-        if (p[rx] > p[ry]) {
+        if (siz[rx] < siz[ry]) {
             std::swap(rx, ry);
             std::swap(x, y);
         }
-        // merge ry to rx
-        p[rx] += p[ry];
-        p[ry] = rx;
+        siz[rx] += siz[ry];
+        f[ry] = rx;
         return rx;
     }
     bool same(int x, int y) { return root(x) == root(y); }
-    int size(int x) { return -p[root(x)]; }
-private:
-    int n;
-    std::vector<int> p;
+    int size(int x) { return siz[root(x)]; }
 };
+  ]], {}, { delimiters = "@$" })),
+
+  s("dsu_rollback", fmta([[
+struct DSU {
+    DSU() : n(0) {}
+    DSU(int n_) : n(n_), f(n_ + 1), siz(n_ + 1, 1) {
+        std::iota(f.begin(), f.end(), 0);
+    }
+
+    int n;
+    std::vector<int> f, siz;
+    std::vector<std::pair<int &, int>> his;
+
+    int root(int x) {
+        while (f[x] != x) {
+            x = f[x];
+        }
+        return x;
+    }
+
+    int merge(int x, int y) {
+        int rx = root(x), ry = root(y);
+        if (rx == ry) {
+            return rx;
+        }
+        if (siz[rx] < siz[ry]) {
+            std::swap(rx, ry);
+            std::swap(x, y);
+        }
+
+        his.push_back({siz[rx], siz[rx]});
+        his.push_back({f[ry], ry});
+
+        siz[rx] += siz[ry];
+        f[ry] = rx;
+        return rx;
+    }
+    bool same(int x, int y) { return root(x) == root(y); }
+    int size(int x) { return siz[root(x)]; }
+
+    void undo(int p) {
+        while (p < his.size()) {
+            auto &[x, y] = his.back();
+            x = y;
+            his.pop_back();
+        }
+    }
+}
   ]], {}, { delimiters = "@$" })),
 
   s("binary_tree", fmta([[
@@ -579,7 +581,7 @@ ll mod;
 template <class T>
 struct Matrix {
     Matrix() : r(0), c(0) {}
-    explicit Matrix(int r, int c, std::vector<std::vector<T>> &m)
+    Matrix(int r, int c, std::vector<std::vector<T>> &m)
         : r(r), c(c), m(m) {}
 
     explicit Matrix(int n) : Matrix(n, n) {}
@@ -853,7 +855,9 @@ struct Comb {
         _n = n;
     }
     Z binom(int n, int k) {
-        assert(n >= k && k >= 0);
+        if (n < k || k < 0) {
+            return 0;
+        }
         init(n);
         return _fac[n] * _facinv[k] * _facinv[n - k];
     }
@@ -901,21 +905,21 @@ std::ostream &operator<<(std::ostream &os, __int128 x) {
   ]], {}, { delimiters = "@$" })),
 
   s("lca", fmt([[
-struct Lca {
+struct LCA {
     std::vector<std::vector<int>> adj;
-    std::vector<std::vector<int>> par;
+    std::vector<std::vector<int>> f;
     std::vector<int> dep;
     int n;
     int root;
     int U;
     // in case size = 1
-    Lca(int size, int _root)
+    LCA(int size, int root_)
         : adj(size + 1),
           dep(size + 1),
           n(size),
-          root(_root),
-          U(std::log2(size) + 1) {
-        par.assign(size + 1, std::vector<int>(U + 1));
+          root(root_),
+          U(std::__lg(size) + 1) {
+        f.assign(size + 1, std::vector<int>(U + 1));
         dep[root] = 1;
     }
     void add_edge(int u, int v) { adj[u].emplace_back(v); }
@@ -926,7 +930,7 @@ struct Lca {
     int up(int x, int k) {
         for (int i = 0; k; k /= 2, i++) {
             if (k & 1) {
-                x = par[x][i];
+                x = f[x][i];
             }
         }
         return x;
@@ -934,7 +938,7 @@ struct Lca {
     void dfs(int u) {
         for (auto v : adj[u]) {
             if (!dep[v]) {
-                par[v][0] = u;
+                f[v][0] = u;
                 dep[v] = dep[u] + 1;
                 dfs(v);
             }
@@ -944,7 +948,7 @@ struct Lca {
         dfs(root);
         for (int i = 1; i <= U; i++) {
             for (int j = 1; j <= n; j++) {
-                par[j][i] = par[ par[j][i - 1] ][i - 1];
+                f[j][i] = f[ f[j][i - 1] ][i - 1];
             }
         }
     }
@@ -958,14 +962,14 @@ struct Lca {
             return x;
         }
         for (int i = U; i >= 0; i--) {
-            int lp = par[x][i];
-            int rp = par[y][i];
+            int lp = f[x][i];
+            int rp = f[y][i];
             if (lp != rp) {
                 x = lp;
                 y = rp;
             }
         }
-        return par[x][0];
+        return f[x][0];
     }
 };
 ]], {}, { delimiters = "@#" })),
@@ -973,7 +977,16 @@ struct Lca {
   s("fenwick", fmt([[
 template <class T>
 struct Fenwick {
-    Fenwick(int n_ = 0) : n(n_) { info.assign(n + 2, T()); }
+    Fenwick(int n_ = 0) : n(n_), info(n_ + 2, T()) {}
+    Fenwick(int n_, std::vector<T> a) : n(n_), info(n_ + 2, T()) {
+        for (int i = 1; i <= n; i++) {
+            info[i] += a[i];
+            auto j = i + (i & -i);
+            if (j <= n) {
+                info[j] += info[i];
+            }
+        }
+    }
 
     void add(int p, T x) {
         while (p <= n) {
@@ -1004,6 +1017,7 @@ struct Fenwick {
                 pos += j;
                 x -= info[pos];
             }
+            // leftmost, info[pos + j] < x, return pos + 1;
         }
         return pos;
     }
@@ -1019,7 +1033,7 @@ private:
 template <class Info>
 struct Segtree {
     Segtree() : n(0) {}
-    explicit Segtree(int n_, Info v_ = Info())
+    Segtree(int n_, Info v_ = Info())
         : Segtree(n_, std::vector(n_ + 1, v_)) {}
 
     template <class T>
@@ -1144,7 +1158,7 @@ struct Info {
 template <class Info, class Tag>
 struct LazySegtree {
     LazySegtree() : n(0) {}
-    explicit LazySegtree(int n_, Info v_ = Info())
+    LazySegtree(int n_, Info v_ = Info())
         : LazySegtree(n_, std::vector(n_ + 1, v_)) {}
 
     template <class T>
