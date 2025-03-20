@@ -6,7 +6,7 @@ return {
     require('competitest').setup({
       compile_command = {
         c         = { exec = "gcc", args = { "-Wall", "$(FNAME)", "-o", "$(FNOEXT)" } },
-        cpp       = { exec = 'g++', args = { '$(FNAME)', '-std=c++17', '-O2', '-Wall', '-o', '$(FNOEXT)' } },
+        cpp       = { exec = 'g++', args = { '$(FNAME)', '-std=c++23', '-O2', '-Wall', '-o', '$(FNOEXT)' } },
         rust      = { exec = "rustc", args = { "$(FNAME)" } },
         java      = { exec = "javac", args = { "$(FNAME)" } },
         kotlin      = { exec = "kotlinc", args = { "$(FNAME)", "-include-runtime", "-d", "$(FNOEXT).jar" } },

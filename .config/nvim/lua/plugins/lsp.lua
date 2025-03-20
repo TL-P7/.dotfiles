@@ -62,7 +62,6 @@ return {
               'lua_ls',
               'clangd',
               'bashls',
-              'pyright',
             },
             automatic_installation = true,
           })
@@ -102,7 +101,7 @@ return {
             },
             init_options = {
               fallbackFlags = {
-                '-std=c++17',
+                '-std=c++23',
               },
             },
           })
@@ -115,19 +114,39 @@ return {
               },
             },
           })
+          lspconfig['ruff'].setup({})
+
+          lspconfig['pylsp'].setup({
+            settings = {
+              pylsp = {
+                plugins = {
+                  pyflakes = { enabled = false },
+                  pycodestyle = { enabled = false },
+                  autopep8 = { enabled = false },
+                  yapf = { enabled = false },
+                  mccabe = { enabled = false },
+                  pylsp_mypy = { enabled = false },
+                  pylsp_black = { enabled = false },
+                  pylsp_isort = { enabled = false },
+                },
+              },
+            },
+          })
           lspconfig['bashls'].setup({
             enableSourceErrorDiagnostics = true,
           })
-          lspconfig['pyright'].setup({})
-          lspconfig['html'].setup({})
-          lspconfig['kotlin_language_server'].setup({
-            cmd = { 'kotlin-language-server' },
-            filetypes = { 'kotlin' },
-            root_dir = function(fname)
-              return lspconfig.util.root_pattern('settings.gradle.kts', 'build.gradle.kts', 'pom.xml')(fname) or
-                  vim.fs.dirname(vim.fs.find('.git', { path = fname, upward = true })[1])
-            end
+          lspconfig['html'].setup({
+            filetypes = { 'html', 'htmldjango' }
           })
+          lspconfig['cssls'].setup({})
+          -- lspconfig['kotlin_language_server'].setup({
+          --   cmd = { 'kotlin-language-server' },
+          --   filetypes = { 'kotlin' },
+          --   root_dir = function(fname)
+          --     return lspconfig.util.root_pattern('settings.gradle.kts', 'build.gradle.kts', 'pom.xml')(fname) or
+          --         vim.fs.dirname(vim.fs.find('.git', { path = fname, upward = true })[1]) or vim.fs.dirname(fname)
+          --   end
+          -- })
           lspconfig['markdown_oxide'].setup({})
           lspconfig['tinymist'].setup({
             -- offset_encoding = 'utf-8',
@@ -210,12 +229,9 @@ return {
         cmd = 'shfmt',
         args = { '-i', '4' },
       })
-      ft('python'):fmt('black')
+      ft('python'):fmt('ruff')
       ft('javascript,json,markdown,yaml'):fmt('prettier')
       ft('go'):fmt('gofumpt')
-      -- ft('make'):lint('checkmake')
-
-      -- ft('*'):lint('codespell')
 
       vim.g.guard_config = {
         fmt_on_save = false,

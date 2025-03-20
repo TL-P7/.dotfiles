@@ -12,7 +12,7 @@ local compileRun = function()
   vim.cmd("w")
   if ft == "cpp" then
     split()
-    vim.cmd("term g++ % -o %< -std=c++20 -lfmt -g -Wall -Wextra -Wpedantic && time ./%<")
+    vim.cmd("term g++ % -o %< -std=c++23 -lfmt -g -Wall -Wextra -Wpedantic && time ./%<")
   elseif ft == "c" then
     split()
     if vim.fn.filereadable("Makefile") == 1 then
