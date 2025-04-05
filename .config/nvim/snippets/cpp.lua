@@ -68,7 +68,7 @@ return {
   s("tem", fmt([[
     #include <bits/stdc++.h>
 
-    using ll = long long;
+    using i64 = long long;
 
     int main() {
         std::ios::sync_with_stdio(false);
@@ -81,7 +81,7 @@ return {
   s("cf", fmt([[
     #include <bits/stdc++.h>
 
-    using ll = long long;
+    using i64 = long long;
 
     void solve() {
         @$
@@ -344,15 +344,15 @@ struct BinaryTree {
   ]], {}, { delimiters = "@$" })),
 
   s("static_modint", fmt([[
-template <ll _mod>
+template <i64 _mod>
 struct Mint {
 public:
-    Mint(ll x) : _x(x % _mod) { norm(x); }
+    Mint(i64 x) : _x(x % _mod) { norm(x); }
     explicit Mint() : _x(0) {}
 
-    static ll mod() { return _mod; }
+    static i64 mod() { return _mod; }
 
-    constexpr ll val() { return _x; }
+    constexpr i64 val() { return _x; }
 
     constexpr Mint operator-() { return Mint(-_x); }
     constexpr Mint operator+() { return Mint(_x); }
@@ -419,7 +419,7 @@ public:
         return lhs._x != rhs._x;
     }
 
-    Mint pow(ll times) const {
+    Mint pow(i64 times) const {
         Mint t(*this);
         Mint ans(1);
         while (times) {
@@ -444,8 +444,8 @@ public:
     }
 
 private:
-    ll _x;
-    static ll norm(ll &x) {
+    i64 _x;
+    static i64 norm(i64 &x) {
         if (x < 0) {
             x += _mod;
         } else if (x >= _mod) {
@@ -462,14 +462,14 @@ using Z = Mint<mod>;
   s("dynamic_modint", fmt([[
 struct Mint {
 public:
-    Mint(ll x) : _x(x % _mod) { norm(_x); }
-    Mint(ll x, ll mod) : _x(x) { _mod = mod, norm(x %= mod); }
+    Mint(i64 x) : _x(x % _mod) { norm(_x); }
+    Mint(i64 x, i64 mod) : _x(x) { _mod = mod, norm(x %= mod); }
     explicit Mint() : _x(0) {}
 
-    static ll mod() { return _mod; }
-    static void setmod(ll mod) { _mod = mod; }
+    static i64 mod() { return _mod; }
+    static void setmod(i64 mod) { _mod = mod; }
 
-    ll val() const { return _x; }
+    i64 val() const { return _x; }
 
     Mint operator-() const { return Mint(-_x); }
     Mint operator+() const { return Mint(_x); }
@@ -536,7 +536,7 @@ public:
         return lhs._x != rhs._x;
     }
 
-    Mint pow(ll times) const {
+    Mint pow(i64 times) const {
         Mint t(*this);
         Mint ans(1);
         while (times) {
@@ -561,9 +561,9 @@ public:
     }
 
 private:
-    static ll _mod;
-    ll _x;
-    static ll norm(ll &x) {
+    static i64 _mod;
+    i64 _x;
+    static i64 norm(i64 &x) {
         if (x < 0) {
             x += _mod;
         } else if (x >= _mod) {
@@ -574,8 +574,8 @@ private:
 };
 
 using Z = Mint;
-ll Z::_mod;
-ll mod;
+i64 Z::_mod;
+i64 mod;
 ]], {}, { delimiters = "@$" })),
   s("matrix", fmt([[
 template <class T>
@@ -603,7 +603,7 @@ struct Matrix {
         return ret;
     }
     constexpr bool square() { return this->c == this->r; }
-    constexpr Matrix pow(ll n) {
+    constexpr Matrix pow(i64 n) {
         assert(this->square());
         Matrix ret(identity(this->c));
         Matrix temp(*this);
@@ -1347,7 +1347,7 @@ void sieve(int n) {
   ]], {}, { delimiters = "@$" })),
   s("qpow", fmt([[
 <template class T>
-T qpow(T a, ll b) {
+T qpow(T a, i64 b) {
     T ans = 1;
     while (b) {
         if (b & 1) {
@@ -1362,14 +1362,14 @@ T qpow(T a, ll b) {
   s("exgcd", fmt([[
 // inv: ax + by = gcd(a, b) = 1
 // ax = 1 (mod b), by = 1 (mod a)
-ll exgcd(ll a, ll b, ll &x, ll &y) {
+i64 exgcd(i64 a, i64 b, i64 &x, i64 &y) {
     if (b == 0) {
         x = 1;
         y = 0;
         return a;
     }
 
-    ll gcd = exgcd(a, b, y, x);
+    i64 gcd = exgcd(a, b, y, x);
     y -= a / b * x;
 
     return gcd;
