@@ -180,7 +180,7 @@ std::vector<int> next(const std::string &s) {
     }
 
     return next;
-}
+}operator
 
 std::vector<int> kmp(const std::string &r, const std::string &s) {
     const int N = r.size(), M = s.size();
@@ -228,7 +228,7 @@ std::vector<int> kmp(const std::string &r, const std::string &s) {
 
   s("dsu", fmta([[
 struct DSU {
-    explicit DSU() : n(0) {}
+    DSU() : n(0) {}
     DSU(int n_) : n(n_), f(n_ + 1), siz(n_ + 1, 1) {
         std::iota(f.begin(), f.end(), 0);
     }
@@ -348,7 +348,7 @@ template <i64 _mod>
 struct Mint {
 public:
     Mint(i64 x) : _x(x % _mod) { norm(x); }
-    explicit Mint() : _x(0) {}
+    Mint() : _x(0) {}
 
     static i64 mod() { return _mod; }
 
@@ -457,6 +457,7 @@ private:
 
 constexpr int mod = @$;
 using Z = Mint<mod>;
+
 ]], { i(1, "998244353") }, { delimiters = "@$" })),
 
   s("dynamic_modint", fmt([[
@@ -464,7 +465,7 @@ struct Mint {
 public:
     Mint(i64 x) : _x(x % _mod) { norm(_x); }
     Mint(i64 x, i64 mod) : _x(x) { _mod = mod, norm(x %= mod); }
-    explicit Mint() : _x(0) {}
+    Mint() : _x(0) {}
 
     static i64 mod() { return _mod; }
     static void setmod(i64 mod) { _mod = mod; }
@@ -584,8 +585,8 @@ struct Matrix {
     Matrix(int r, int c, std::vector<std::vector<T>> &m)
         : r(r), c(c), m(m) {}
 
-    explicit Matrix(int n) : Matrix(n, n) {}
-    explicit Matrix(int r, int c) : r(r), c(c) {
+    Matrix(int n) : Matrix(n, n) {}
+    Matrix(int r, int c) : r(r), c(c) {
         m = std::vector<std::vector<T>>(r, std::vector<T>(c));
     }
     Matrix(std::vector<std::vector<T>> &m) : m(m) {
@@ -905,71 +906,91 @@ std::ostream &operator<<(std::ostream &os, __int128 x) {
   ]], {}, { delimiters = "@$" })),
 
   s("lca", fmt([[
+struct Vert {
+    int id;
+    int max = -1E9;
+    int semax = -1E9;
+    friend Vert operator+(Vert &lo, Vert &hi) {
+        std::set S{lo.max, lo.semax, hi.max, hi.semax};
+        auto next = std::next(S.rbegin());
+        return {hi.id, *S.rbegin(),
+                next == S.rend() || *next == -1E9 ? *S.rbegin() : *next};
+    }
+};
+struct Edge {
+    int y;
+    int w;
+};
+
 struct LCA {
-    std::vector<std::vector<int>> adj;
-    std::vector<std::vector<int>> f;
-    std::vector<int> dep;
+    std::vector<std::vector<Vert>> f;
+    std::vector<std::vector<Edge>> adj;
+    std::vector<int> d;
     int n;
-    int root;
     int U;
+    std::vector<Vert> p;
     // in case size = 1
-    LCA(int size, int root_)
-        : adj(size + 1),
-          dep(size + 1),
-          n(size),
-          root(root_),
-          U(std::__lg(size) + 1) {
-        f.assign(size + 1, std::vector<int>(U + 1));
-        dep[root] = 1;
+    LCA(std::vector<Vert> &&p_)
+        : p(std::move(p_)),
+          adj(p_.size()),
+          d(p_.size()),
+          n(p_.size()),
+          U(std::__lg(p_.size()) + 1) {
+        f.assign(p.size(), std::vector<Vert>(U + 1));
     }
-    void add_edge(int u, int v) { adj[u].emplace_back(v); }
-    void add_edges(int u, int v) {
-        add_edge(u, v);
-        add_edge(v, u);
-    }
-    int up(int x, int k) {
+    void addEdge(int x, Edge &&e) { adj[x].push_back(e); }
+    Vert up(int x, int k) {
+        Vert s{p[x]};
         for (int i = 0; k; k /= 2, i++) {
             if (k & 1) {
-                x = f[x][i];
+                s = s + f[s.id][i];
             }
         }
-        return x;
+        return s;
     }
-    void dfs(int u) {
-        for (auto v : adj[u]) {
-            if (!dep[v]) {
-                f[v][0] = u;
-                dep[v] = dep[u] + 1;
-                dfs(v);
+
+    Vert init(Vert &lo, Vert &hi, Edge &e) { return {hi.id, e.w, e.w}; }
+
+    void dfs(int x) {
+        for (auto &e : adj[x]) {
+            auto y = e.y;
+            if (!d[y]) {
+                f[y][0] = init(p[y], p[x], e);
+                d[y] = d[x] + 1;
+                dfs(y);
             }
         }
     }
-    void build() {
+    void build(int root) {
+        d[root] = 1;
         dfs(root);
         for (int i = 1; i <= U; i++) {
-            for (int j = 1; j <= n; j++) {
-                f[j][i] = f[ f[j][i - 1] ][i - 1];
+            for (int j = 0; j < n; j++) {
+                f[j][i] = f[j][i - 1] + f[f[j][i - 1].id][i - 1];
             }
         }
     }
-    int operator()(int x, int y) {
-        if (dep[x] < dep[y]) {
-            std::swap(x, y);
+    Vert operator()(int x_, int y_) {
+        if (d[x_] < d[y_]) {
+            std::swap(x_, y_);
         }
-        int diff = dep[x] - dep[y];
-        x = up(x, diff);
-        if (x == y) {
+        int diff = d[x_] - d[y_];
+        Vert x = up(x_, diff), y = p[y_];
+        if (x.id == y.id) {
             return x;
         }
         for (int i = U; i >= 0; i--) {
-            int lp = f[x][i];
-            int rp = f[y][i];
-            if (lp != rp) {
-                x = lp;
-                y = rp;
+            Vert X = f[x.id][i];
+            Vert Y = f[y.id][i];
+            if (X.id != Y.id) {
+                x = x + X;
+                y = y + Y;
             }
         }
-        return f[x][0];
+
+        auto a = x + f[x.id][0];
+        auto b = y + f[y.id][0];
+        return a + b;
     }
 };
 ]], {}, { delimiters = "@#" })),
@@ -1037,7 +1058,7 @@ struct Segtree {
         : Segtree(n_, std::vector(n_ + 1, v_)) {}
 
     template <class T>
-    explicit Segtree(int n_, std::vector<T> a_) : n(n_) {
+    Segtree(int n_, std::vector<T> a_) : n(n_) {
         init(n_, a_);
     }
 
@@ -1162,7 +1183,7 @@ struct LazySegtree {
         : LazySegtree(n_, std::vector(n_ + 1, v_)) {}
 
     template <class T>
-    explicit LazySegtree(int n_, std::vector<T> a_) : n(n_) {
+    LazySegtree(int n_, std::vector<T> a_) : n(n_) {
         init(n_, a_);
     }
 
@@ -1346,7 +1367,7 @@ void sieve(int n) {
 }
   ]], {}, { delimiters = "@$" })),
   s("qpow", fmt([[
-<template class T>
+template <class T>
 T qpow(T a, i64 b) {
     T ans = 1;
     while (b) {
@@ -1362,19 +1383,23 @@ T qpow(T a, i64 b) {
   s("exgcd", fmt([[
 // inv: ax + by = gcd(a, b) = 1
 // ax = 1 (mod b), by = 1 (mod a)
-i64 exgcd(i64 a, i64 b, i64 &x, i64 &y) {
+template <class T>
+std::tuple<i64, T, T> exgcd(i64 a, i64 b) {
     if (b == 0) {
-        x = 1;
-        y = 0;
-        return a;
+        return {a, 1, 0};
     }
 
-    i64 gcd = exgcd(a, b, y, x);
-    y -= a / b * x;
+    auto [gcd, y, x] = exgcd<T>(b, a % b);
 
-    return gcd;
+    y -= a / b * x;
+    return {gcd, x, y};
 }
-  ]], {}, { delimiters = "@$" })),
+
+template <class T>
+T inv(i64 a, i64 p) {
+    return std::get<1>(exgcd<T>(a, p));
+}
+]], {}, { delimiters = "@$" })),
 
   s("scc", fmt([[
 struct SCC {
@@ -1428,7 +1453,145 @@ struct SCC {
         return bel;
     }
 };
-  ]], {}, { delimiters = "@$" })),
+]], {}, { delimiters = "@$" })),
+  s("ebcc", fmt([[
+struct EBCC {
+    int n;
+    std::vector<int> dfn, low, bel, stk;
+    std::vector<std::vector<int>> adj;
+    int idx, cnt;
+
+    EBCC(int n) { init(n); }
+
+    void init(int n_) {
+        n = n_;
+        adj.assign(n, {});
+        dfn.assign(n, -1);
+        low.resize(n);
+        bel.resize(n, -1);
+        stk.clear();
+        idx = cnt = 0;
+    }
+
+    void addEdge(int x, int y) {
+        if (x == y) {
+            return;
+        }
+
+        adj[x].push_back(y);
+        adj[y].push_back(x);
+    }
+
+    void tarjan(int x, int p) {
+        dfn[x] = low[x] = idx++;
+        stk.push_back(x);
+
+        int f = 0;
+        for (auto y : adj[x]) {
+            if (y == p && f == 0) {
+                f++;
+                continue;
+            }
+
+            if (dfn[y] == -1) {
+                tarjan(y, x);
+                low[x] = std::min(low[x], low[y]);
+            } else if (bel[y] == -1 && dfn[y] < dfn[x]) {
+                low[x] = std::min(low[x], dfn[y]);
+            }
+        }
+
+        if (dfn[x] == low[x]) {
+            int y;
+            do {
+                y = stk.back();
+                bel[y] = cnt;
+                stk.pop_back();
+            } while (y != x);
+            cnt++;
+        }
+    }
+
+    void work() {
+        for (int i = 0; i < n; i++) {
+            if (dfn[i] == -1) {
+                tarjan(i, -1);
+            }
+        }
+    }
+};
+]], {}, { delimiters = "@$" })),
+  s("vbcc", fmt([[
+struct VBCC {
+    int n;
+    std::vector<int> dfn, low, cut, stk;
+    std::vector<std::vector<int>> adj, com;
+    int idx, cnt;
+
+    VBCC(int n) { init(n); }
+
+    void init(int n_) {
+        n = n_;
+        dfn.assign(n, -1);
+        cut.assign(n, -1);
+        low.resize(n);
+        stk.clear();
+        adj.assign(n, {});
+        idx = cnt = 0;
+    }
+
+    void addEdge(int x, int y) {
+        if (x == y) {
+            return;
+        }
+        adj[x].push_back(y);
+        adj[y].push_back(x);
+    }
+
+    void tarjan(int x, int root) {
+        if (adj[x].empty()) {
+            cnt++;
+            com.push_back({x});
+            return;
+        }
+
+        dfn[x] = low[x] = idx++;
+        stk.push_back(x);
+        int f = 0;
+        for (auto y : adj[x]) {
+            if (dfn[y] == -1) {
+                tarjan(y, x);
+                low[x] = std::min(low[x], low[y]);
+                if (low[y] >= dfn[x]) {
+                    f++;
+                    if (f > (x == root)) {
+                        cut[x] = 1;
+                    }
+
+                    com.push_back({x});
+                    int z;
+                    do {
+                        z = stk.back();
+                        com[cnt].push_back(z);
+                        stk.pop_back();
+                    } while (z != y);
+                    cnt++;
+                }
+            } else {
+                low[x] = std::min(low[x], dfn[y]);
+            }
+        }
+    }
+
+    void work() {
+        for (int i = 0; i < n; i++) {
+            if (dfn[i] == -1) {
+                tarjan(i, i);
+            }
+        }
+    }
+};
+]], {}, { delimiters = "@$" })),
   s("spt", fmt([[
 template <class T>
 struct ST {
@@ -1473,11 +1636,391 @@ struct Info {
 };
 ]], {}, { delimiters = "@$" })),
 
+  s("simpson", fmt([[
+constexpr double EPS = 1E-9;
 
-  -- construction
-  s("head", {
-    t({ "#pragma once", "", "#ifndef " ..
-    vim.fn.expand("%:r"):upper() ..
-    "__H", "#define " .. vim.fn.expand("%:r"):upper() .. "__H", "", "class " })
-    , i(1, vim.fn.expand("%:r")), t({ " {};", "", "#endif" }) }),
+double f(double x) {
+    return @$;
+}
+
+double simpson(double l, double r) {
+    return (f(l) + f(r) + 4 * f((l + r) / 2)) * (r - l) / 6;
+}
+
+double integral(double l, double r, double eps, double st) {
+    double m = (l + r) / 2;
+    double sl = simpson(l, m);
+    double sr = simpson(m, r);
+
+    if (std::abs(sl + sr - st) <= 15 * EPS) {
+        return sl + sr + (sl + sr - st) / 15;
+    }
+
+    return integral(l, m, eps / 2, sl) + integral(m, r, eps / 2, sr);
+}
+
+double integral(double l, double r) {
+    return integral(l, r, EPS, simpson(l, r));
+}
+]], { i(1) }, { delimiters = "@$" })),
+  s("fft", fmt([[
+template <class F>
+struct FFT {
+    std::vector<int> rev;
+    std::vector<std::complex<F>> roots;
+
+    const F pi = std::acos(-1);
+
+    std::complex<F> identity(int k) {
+        return std::complex(std::cos(2 * pi / (1 << k)),
+                            std::sin(2 * pi / (1 << k)));
+    }
+    void dft(std::vector<std::complex<F>> &a) {
+        const int n = a.size();
+        if (rev.size() != n) {
+            const int k = __builtin_ctz(n) - 1;
+            rev.resize(n);
+            for (int i = 0; i < n; i++) {
+                rev[i] = rev[i >> 1] >> 1 | (i & 1) << k;
+            }
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (i < rev[i]) {
+                std::swap(a[i], a[ rev[i] ]);
+            }
+        }
+
+        if (roots.size() != n) {
+            if (roots.empty()) {
+                roots = {0, 1};
+            }
+            int k = __builtin_ctz(roots.size());
+            roots.resize(n);
+            while (1 << k < n) {
+                auto e = identity(k + 1);
+                for (int i = 1 << (k - 1); i < 1 << k; i++) {
+                    roots[2 * i] = roots[i];
+                    roots[2 * i + 1] = roots[i] * e;
+                }
+                k++;
+            }
+        }
+
+        for (int k = 1; k < n; k *= 2) {
+            for (int i = 0; i < n; i += 2 * k) {
+                for (int j = 0; j < k; j++) {
+                    auto x = a[i + j], y = a[i + j + k] * roots[k + j];
+                    a[i + j] = x + y;
+                    a[i + j + k] = x - y;
+                }
+            }
+        }
+    }
+
+    void idft(std::vector<std::complex<F>> &a) {
+        dft(a);
+        const int n = a.size();
+        std::reverse(a.begin() + 1, a.end());
+        for (int i = 0; i < n; i++) {
+            a[i] /= n;
+        }
+    }
+};
+
+template <class F>
+std::vector<F> &operator*=(std::vector<F> &a, const std::vector<F> &b) {
+    static FFT<F> fft;
+    int n = a.size(), m = b.size();
+    if (std::min(n, m) == 0) {
+        return a = {};
+    }
+
+    int tot = n + m - 1;
+    if (std::min(n, m) < 128) {
+        std::vector<F> c(tot);
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                c[i + j] += a[i] * b[j];
+            }
+        }
+
+        return a = std::move(c);
+    }
+
+    int siz = 1;
+    while (siz < tot) {
+        siz *= 2;
+    }
+
+    a.resize(siz);
+    std::vector<std::complex<F>> c(a.begin(), a.end()), d(b.begin(), b.end());
+    d.resize(siz);
+    fft.dft(c);
+    fft.dft(d);
+    for (int i = 0; i < siz; i++) {
+        c[i] *= d[i];
+    }
+
+    fft.idft(c);
+
+    for (int i = 0; i < tot; i++) {
+        a[i] = c[i].real();
+    }
+    return a;
+}
+
+template <class F>
+std::vector<F> operator*(const std::vector<F> &a, const std::vector<F> &b) {
+    return std::vector<F>{a} *= b;
+}
+]], {}, { delimiters = "@$" })),
+  s("ntt", fmt([[
+struct NTT {
+    std::vector<int> rev;
+    std::vector<Z> roots;
+
+    Z identity(int k) {
+        assert(mod == 998244353);
+        return Z(3).pow((mod - 1) >> k);
+    }
+    void dft(std::vector<Z> &a) {
+        const int n = a.size();
+        if (rev.size() != n) {
+            const int k = __builtin_ctz(n) - 1;
+            rev.resize(n);
+            for (int i = 0; i < n; i++) {
+                rev[i] = rev[i >> 1] >> 1 | (i & 1) << k;
+            }
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (i < rev[i]) {
+                std::swap(a[i], a[ rev[i] ]);
+            }
+        }
+
+        if (roots.size() != n) {
+            if (roots.empty()) {
+                roots = {0, 1};
+            }
+            int k = __builtin_ctz(roots.size());
+            roots.resize(n);
+            while (1 << k < n) {
+                auto e = identity(k + 1);
+                for (int i = 1 << (k - 1); i < 1 << k; i++) {
+                    roots[2 * i] = roots[i];
+                    roots[2 * i + 1] = roots[i] * e;
+                }
+                k++;
+            }
+        }
+
+        for (int k = 1; k < n; k *= 2) {
+            for (int i = 0; i < n; i += 2 * k) {
+                for (int j = 0; j < k; j++) {
+                    Z x = a[i + j], y = a[i + j + k] * roots[k + j];
+                    a[i + j] = x + y;
+                    a[i + j + k] = x - y;
+                }
+            }
+        }
+    }
+
+    void idft(std::vector<Z> &a) {
+        dft(a);
+        const int n = a.size();
+        std::reverse(a.begin() + 1, a.end());
+        for (int i = 0; i < n; i++) {
+            a[i] /= n;
+        }
+    }
+} ntt;
+
+std::vector<Z> &operator*=(std::vector<Z> &a, const std::vector<Z> &b) {
+    int n = a.size(), m = b.size();
+    if (std::min(n, m) == 0) {
+        return a = {};
+    }
+
+    int tot = n + m - 1;
+    if (std::min(n, m) < 128) {
+        std::vector<Z> c(tot);
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                c[i + j] += a[i] * b[j];
+            }
+        }
+
+        return a = std::move(c);
+    }
+
+    int siz = 1;
+    while (siz < tot) {
+        siz *= 2;
+    }
+
+    std::vector c(b.begin(), b.end());
+    a.resize(siz);
+    c.resize(siz);
+
+    ntt.dft(a);
+    ntt.dft(c);
+    for (int i = 0; i < siz; i++) {
+        a[i] *= c[i];
+    }
+
+    ntt.idft(a);
+    a.resize(tot);
+    return a;
+}
+]], {}, { delimiters = "@$" })),
+  s("poly", fmt([[
+template <class T>
+struct Poly {
+    std::vector<T> a;
+    Poly() {}
+    explicit Poly(
+        int size,
+        std::function<T(int)> f = [](int) { return T{}; })
+        : a(size) {
+        for (int i = 0; i < size; i++) {
+            a[i] = f(i);
+        }
+    }
+    explicit Poly(int size, std::function<T(void)> f) : a(size) {
+        for (int i = 0; i < size; i++) {
+            a[i] = f();
+        }
+    }
+    Poly(const std::vector<T> &a) : a(a) {}
+    Poly(const std::initializer_list<T> &a) : a(a) {}
+    int size() const { return a.size(); }
+    void resize(int n) { a.resize(n); }
+    T operator[](int idx) const {
+        if (idx < a.size()) {
+            return a[idx];
+        }
+        return {};
+    }
+    T &operator[](int idx) {
+        if (a.size() < idx + 1) {
+            a.resize(idx + 1);
+        }
+        return a[idx];
+    }
+    Poly mulxk(int k) const {
+        auto b = a;
+        b.insert(b.begin(), k, T{});
+        return b;
+    }
+    Poly modxk(int k) const {
+        k = std::min(size(), k);
+        return std::vector(a.begin(), a.begin() + k);
+    }
+    Poly divxk(int k) const {
+        if (size() <= k) {
+            return {};
+        }
+        return std::vector(a.begin() + k, a.end());
+    }
+
+    Poly<T> &operator+=(const Poly<T> &b) {
+        a.resize(std::max(size(), b.size()));
+        for (int i = 0; i < b.size(); i++) {
+            a[i] += b[i];
+        }
+        return *this;
+    }
+    Poly<T> &operator-=(const Poly<T> &b) {
+        a.resize(std::max(size(), b.size()));
+        for (int i = 0; i < b.size(); i++) {
+            a[i] -= b[i];
+        }
+        return *this;
+    }
+    Poly<T> &operator*=(const Poly<T> &b) {
+        a *= b.a;
+        return *this;
+    }
+    Poly<T> &operator*=(T b) {
+        for (int i = 0; i < size(); i++) {
+            a[i] *= b;
+        }
+        return *this;
+    }
+
+    Poly<T> &operator/=(T b) {
+        for (int i = 0; i < size(); i++) {
+            a[i] /= b;
+        }
+        return *this;
+    }
+
+    friend Poly<T> operator+(const Poly<T> &a, const Poly<T> &b) {
+        return Poly{a} += b;
+    }
+    friend Poly<T> operator-(const Poly<T> &a, const Poly<T> &b) {
+        return Poly{a} -= b;
+    }
+
+    friend Poly<T> operator*(const Poly<T> &a, const Poly<T> &b) {
+        return Poly{a} *= b;
+    }
+
+    friend Poly<T> operator*(T a, const Poly<T> &b) { return Poly{b} *= a; }
+
+    friend Poly<T> operator*(const Poly<T> &a, T b) { return Poly{a} *= b; }
+
+    friend Poly<T> operator/(const Poly<T> &a, T b) { return Poly{a} /= b; }
+
+    Poly<T> deriv() const {
+        if (a.empty()) {
+            return {};
+        }
+        std::vector<T> ans(size() - 1);
+        for (int i = 0; i < size() - 1; ++i) {
+            ans[i] = (i + 1) * a[i + 1];
+        }
+        return ans;
+    }
+    Poly<T> integr() const {
+        std::vector<T> ans(size() + 1);
+        for (int i = 0; i < size(); i++) {
+            ans[i + 1] = a[i] / (i + 1);
+        }
+        return ans;
+    }
+    Poly<T> inv(int m) const {
+        Poly ans{a[0].inv()};
+        int k = 1;
+        while (k < m) {
+            k *= 2;
+            ans = (ans * (Poly<T>{2} - ans * modxk(k))).modxk(k);
+        }
+        return ans.modxk(m);
+    }
+    Poly<T> sqrt(int m) const {
+        // Note: assert a[0] = 1
+        Poly ans{1};
+        int k = 1;
+        while (k < m) {
+            k *= 2;
+            ans = (ans / 2 + modxk(k) * ans.inv(k) / 2).modxk(k);
+        }
+        return ans.modxk(m);
+    }
+
+    Poly<T> log(int m) const { return (deriv() * inv(m)).integr().modxk(m); }
+    Poly<T> exp(int m) const {
+        Poly ans{1};
+        int k = 1;
+        while (k < m) {
+            k *= 2;
+            ans = (ans * (Poly{1} - ans.log(k) + modxk(k))).modxk(k);
+        }
+        return ans.modxk(m);
+    }
+};
+]], {}, {delimiters = "@$"})),
 }
