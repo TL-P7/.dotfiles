@@ -995,6 +995,134 @@ struct LCA {
 };
 ]], {}, { delimiters = "@#" })),
 
+  s("hld", fmt([[
+struct HLD {
+    int n, root;
+    std::vector<int> siz, top, dep, p, in, out, seq;
+    std::vector<std::vector<int>> adj;
+    int idx;
+
+    HLD() {}
+    HLD(int n) { init(n); }
+
+    void init(int n, int root = 0) {
+        this->n = n;
+        this->root = root;
+        siz.resize(n, 1);
+        top.resize(n);
+        dep.resize(n);
+        p.resize(n);
+        in.resize(n);
+        out.resize(n);
+        seq.resize(n);
+        idx = 0;
+        adj.resize(n);
+    }
+
+    void addEdge(int x, int y) {
+        adj[x].push_back(y);
+        adj[y].push_back(x);
+    }
+
+    void work() { work(root); }
+
+    void work(int root) {
+        top[root] = root;
+        p[root] = -1;
+        dfs1(root);
+        dfs2(root);
+    }
+
+    void dfs1(int x) {
+        if (p[x] != -1) {
+            adj[x].erase(std::find(adj[x].begin(), adj[x].end(), p[x]));
+        }
+        for (auto &y : adj[x]) {
+            p[y] = x;
+            dep[y] = dep[x] + 1;
+            dfs1(y);
+            siz[x] += siz[y];
+            if (siz[y] > siz[ adj[x][0] ]) {
+                std::swap(y, adj[x][0]);
+            }
+        }
+    }
+    void dfs2(int x) {
+        seq[idx] = x;
+        in[x] = idx++;
+        for (auto y : adj[x]) {
+            top[y] = adj[x][0] == y ? top[x] : y;
+            dfs2(y);
+        }
+        out[x] = idx;
+    }
+
+    int lca(int x, int y) {
+        if (isAncestor(x, y)) {
+            return x;
+        }
+        while (top[x] != top[y]) {
+            if (dep[ top[x] ] > dep[ top[y] ]) {
+                x = p[ top[x] ];
+            } else {
+                y = p[ top[y] ];
+            }
+        }
+
+        return dep[x] < dep[y] ? x : y;
+    }
+
+    int dist(int x, int y) { return dep[x] + dep[y] - 2 * dep[lca(x, y)]; }
+
+    int jump(int x, int k) {
+        if (dep[x] < k) {
+            return -1;
+        }
+
+        int d = dep[x] - k;
+        while (dep[x] < d) {
+            x = p[ top[x] ];
+        }
+
+        return seq[in[x] - dep[x] + d];
+    }
+
+    bool isAncestor(int x, int y) { return in[x] <= in[y] && in[x] < out[y]; }
+
+    int parent(int x) { return parent(x, root); }
+
+    int size(int x) { return size(x, root); }
+
+    int parent(int x, int root) {
+        if (x == root) {
+            return x;
+        }
+
+        if (!isAncestor(x, root)) {
+            return p[x];
+        }
+
+        auto it =
+            std::upper_bound(adj[x].begin(), adj[x].end(), root,
+                             [&](int a, int b) { return in[a] < in[b]; }) -
+            1;
+
+        return *it;
+    }
+
+    int size(int x, int root) {
+        if (x == root) {
+            return n;
+        }
+        if (!isAncestor(x, root)) {
+            return siz[x];
+        }
+
+        return n - siz[parent(x, root)];
+    }
+};
+  ]], {}, { delimiters = "@$" })),
+
   s("fenwick", fmt([[
 template <class T>
 struct Fenwick {
@@ -1053,118 +1181,107 @@ private:
   s("segtree", fmt([[
 template <class Info>
 struct Segtree {
+    int n;
+    std::vector<Info> info;
+    void update(int p) { info[p] = info[p * 2] + info[p * 2 + 1]; }
+
     Segtree() : n(0) {}
-    Segtree(int n_, Info v_ = Info())
-        : Segtree(n_, std::vector(n_ + 1, v_)) {}
+    Segtree(int n_, Info v_ = Info()) : Segtree(n_, std::vector(n_, v_)) {}
 
     template <class T>
-    Segtree(int n_, std::vector<T> a_) : n(n_) {
-        init(n_, a_);
+    Segtree(std::vector<T> a_) {
+        init(a_);
     }
 
     template <class T>
-    void init(int n_, std::vector<T> a_) {
-        size = bit_ceil(n_);
-        log = __builtin_ctz(size);
-        info.assign(size * 2, Info());
-        std::function<void(int, int, int)> build = [&](int id, int l, int r) {
-            if (l == r) {
-                info[id] = a_[l];
+    void init(std::vector<T> a_) {
+        n = a_.size();
+        info.assign(4 << std::__lg(n), Info());
+        std::function<void(int, int, int)> build = [&](int p, int l, int r) {
+            if (r - l == 1) {
+                info[p] = a_[l];
                 return;
             }
             int m = (l + r) / 2;
-            build(id * 2, l, m);
-            build(id * 2 + 1, m + 1, r);
-            update(id);
+            build(p * 2, l, m);
+            build(p * 2 + 1, m, r);
+            update(p);
         };
-        build(1, 1, n_);
+        build(1, 0, n);
     }
 
-    void set(int p, const Info &v) { set(p, v, 1, 1, n); }
-    void set(int p, const Info &v, int id, int l, int r) {
-        if (l == r) {
-            info[id] = v;
+    void set(int p, const Info &v) { set(p, 1, 0, n, v); }
+    void set(int x, int p, int l, int r, const Info &v) {
+        if (r - l == 1) {
+            info[p] = v;
             return;
         }
+
         int m = (l + r) / 2;
-        if (p <= m) {
-            set(p, v, id * 2, l, m);
+        if (x < m) {
+            set(x, p * 2, l, m, v);
         } else {
-            set(p, v, id * 2 + 1, m + 1, r);
+            set(x, p * 2 + 1, m, r, v);
         }
-        update(id);
+
+        update(p);
     }
 
-    Info query(int ql, int qr) const { return query(ql, qr, 1, 1, n); }
-    Info query(int ql, int qr, int id, int l, int r) const {
-        if (l == ql && r == qr) {
-            return info[id];
+    Info query(int l, int r) const { return query(l, r, 1, 0, n); }
+    Info query(int x, int y, int p, int l, int r) const {
+        if (l >= y || r <= x) {
+            return Info();
         }
+
+        if (l >= x && r <= y) {
+            return info[p];
+        }
+
         int m = (l + r) / 2;
-        if (qr <= m) {
-            return query(ql, qr, id * 2, l, m);
-        } else if (ql > m) {
-            return query(ql, qr, id * 2 + 1, m + 1, r);
-        } else {
-            return query(ql, m, id * 2, l, m) +
-                   query(m + 1, qr, id * 2 + 1, m + 1, r);
-        }
-    }
-    Info all() {
-        return info[1];
+        return query(x, y, p * 2, l, m) + query(x, y, p * 2 + 1, m, r);
     }
 
+    Info all() { return info[1]; }
+
     template <class F>
-    int find_first(int ql, int qr, F &&pred) {
-        return find_first(ql, qr, 1, 1, n, pred);
+    int findFirst(int l, int r, F &&pred) {
+        return findFirst(l, r, 1, 0, n, pred);
     }
     template <class F>
-    int find_first(int ql, int qr, int id, int l, int r, F &&pred) {
-        if (l > qr || r < ql || !pred(info[id])) {
+    int findFirst(int x, int y, int p, int l, int r, F &&pred) {
+        if (l >= y || r <= x || !pred(info[p])) {
             return -1;
         }
-        if (l == r) {
-            return id;
+        if (r - l == 1) {
+            return l;
         }
         int m = (l + r) / 2;
-        int res = find_first(ql, qr, id * 2, l, m, pred);
+        int ans = findFirst(x, y, p * 2, l, m, pred);
+        if (ans == -1) {
+            ans = findFirst(x, y, p * 2 + 1, m, r, pred);
+        }
+        return ans;
+    }
+
+    template <class F>
+    int findLast(int l, int r, F &&pred) {
+        return findLast(l, r, 1, 0, n, pred);
+    }
+    template <class F>
+    int findLast(int x, int y, int p, int l, int r, F &&pred) {
+        if (l >= y || r <= x || !pred(info[p])) {
+            return -1;
+        }
+        if (r - l == 1) {
+            return l;
+        }
+        int m = (l + r) / 2;
+        int res = findLast(x, y, p * 2 + 1, m, r, pred);
         if (res == -1) {
-            res = find_first(ql, qr, id * 2 + 1, m + 1, r, pred);
+            res = findLast(x, y, p * 2, l, m, pred);
         }
         return res;
     }
-
-    template <class F>
-    int find_last(int ql, int qr, F &&pred) {
-        return find_last(ql, qr, 1, 1, n, pred);
-    }
-    template <class F>
-    int find_last(int ql, int qr, int id, int l, int r, F &&pred) {
-        if (l > qr || r < ql || !pred(info[id])) {
-            return -1;
-        }
-        if (l == r) {
-            return id;
-        }
-        int m = (l + r) / 2;
-        int res = find_last(ql, qr, id * 2 + 1, m + 1, r, pred);
-        if (res == -1) {
-            res = find_last(ql, qr, id * 2, l, m, pred);
-        }
-        return res;
-    }
-
-private:
-    int n, size, log;
-    std::vector<Info> info;
-    unsigned int bit_ceil(unsigned int n) {
-        unsigned int x = 1;
-        while (x < (unsigned int)(n)) {
-            x *= 2;
-        }
-        return x;
-    }
-    void update(int p) { info[p] = info[p * 2] + info[p * 2 + 1]; }
 };
 
 struct Info {
@@ -1178,150 +1295,132 @@ struct Info {
   s("lazy_segtree", fmt([[
 template <class Info, class Tag>
 struct LazySegtree {
+    int n;
+    std::vector<Info> info;
+    std::vector<Tag> tag;
+    void update(int p) { info[p] = info[p * 2] + info[p * 2 + 1]; }
+
+    void apply(int p, const Tag &t) {
+        info[p].apply(t);
+        tag[p].apply(t);
+    }
+    void push(int p) {
+        apply(p * 2, tag[p]);
+        apply(p * 2 + 1, tag[p]);
+        tag[p] = Tag();
+    }
     LazySegtree() : n(0) {}
     LazySegtree(int n_, Info v_ = Info())
-        : LazySegtree(n_, std::vector(n_ + 1, v_)) {}
+        : LazySegtree(n_, std::vector(n_, v_)) {}
 
     template <class T>
-    LazySegtree(int n_, std::vector<T> a_) : n(n_) {
-        init(n_, a_);
+    LazySegtree(std::vector<T> a_) : n(a_.size()) {
+        init(a_);
     }
 
     template <class T>
-    void init(int n_, std::vector<T> a_) {
-        size = bit_ceil(n_);
-        log = __builtin_ctz(size);
-        info.assign(size * 2, Info());
-        tag.assign(size * 2, Tag());
-        std::function<void(int, int, int)> build = [&](int id, int l, int r) {
-            if (l == r) {
-                info[id] = a_[l];
+    void init(std::vector<T> a_) {
+        n = a_.size();
+        info.assign(4 << std::__lg(n), Info());
+        tag.assign(4 << std::__lg(n), Tag());
+        std::function<void(int, int, int)> build = [&](int p, int l, int r) {
+            if (r - l == 1) {
+                info[p] = a_[l];
                 return;
             }
             int m = (l + r) / 2;
-            build(id * 2, l, m);
-            build(id * 2 + 1, m + 1, r);
-            update(id);
+            build(p * 2, l, m);
+            build(p * 2 + 1, m, r);
+            update(p);
         };
-        build(1, 1, n_);
+        build(1, 0, n);
     }
-    void set(int p, const Info &v) { set(p, v, 1, 1, n); }
-    void set(int p, const Info &v, int id, int l, int r) {
-        if (l == r) {
+    void set(int p, const Info &v) { set(p, 1, 0, n, v); }
+    void set(int x, int p, int l, int r, const Info &v) {
+        if (r - l == 1) {
             info[l] = v;
             return;
         }
         int m = (l + r) / 2;
-        push(id);
-        if (p <= m) {
-            set(p, v, id * 2, l, m);
+        push(p);
+        if (x < m) {
+            set(x, p * 2, l, m, v);
         } else {
-            set(p, v, id * 2 + 1, m + 1, r);
+            set(x, p * 2 + 1, m, r, v);
         }
-        update(id);
+        update(p);
     }
 
-    void modify(int ml, int mr, const Tag &t) { modify(ml, mr, t, 1, 1, n); }
-    void modify(int ml, int mr, const Tag &t, int id, int l, int r) {
-        if (l == ml && r == mr) {
-            apply(id, t);
+    void modify(int l, int r, const Tag &t) { modify(l, r, 1, 0, n, t); }
+    void modify(int x, int y, int p, int l, int r, const Tag &t) {
+        if (l >= y || r <= x) {
             return;
         }
-        push(id);
-        int m = (l + r) / 2;
-        if (mr <= m) {
-            modify(ml, mr, t, id * 2, l, m);
-        } else if (ml > m) {
-            modify(ml, mr, t, id * 2 + 1, m + 1, r);
-        } else {
-            modify(ml, m, t, id * 2, l, m);
-            modify(m + 1, mr, t, id * 2 + 1, m + 1, r);
+
+        if (l >= x && r <= y) {
+            apply(p, t);
+            return;
         }
-        update(id);
+        push(p);
+        int m = (l + r) / 2;
+        modify(x, y, p * 2, l, m, t);
+        modify(x, y, p * 2 + 1, m, r, t);
+        update(p);
     }
 
-    Info query(int ql, int qr) { return query(ql, qr, 1, 1, n); }
-    Info query(int ql, int qr, int id, int l, int r) {
-        if (l == ql && r == qr) {
-            return info[id];
+    Info query(int l, int r) { return query(l, r, 1, 0, n); }
+    Info query(int x, int y, int p, int l, int r) {
+        if (l >= y || r <= x) {
+            return Info();
         }
-        push(id);
+        if (l >= x && r <= y) {
+            return info[p];
+        }
+        push(p);
         int m = (l + r) / 2;
-        if (qr <= m) {
-            return query(ql, qr, id * 2, l, m);
-        } else if (ql > m) {
-            return query(ql, qr, id * 2 + 1, m + 1, r);
-        } else {
-            return query(ql, m, id * 2, l, m) +
-                   query(m + 1, qr, id * 2 + 1, m + 1, r);
-        }
-    }
-    Info all() {
-        return info[1];
+        return query(x, y, p * 2, l, m) + query(x, y, p * 2 + 1, m, r);
     }
 
+    Info all() { return info[1]; }
+
     template <class F>
-    int find_first(int ql, int qr, F &&pred) {
-        return find_first(ql, qr, 1, 1, n, pred);
+    int findFirst(int l, int r, F &&pred) {
+        return findFirst(l, r, 1, 0, n, pred);
     }
     template <class F>
-    int find_first(int ql, int qr, int id, int l, int r, F &&pred) {
-        if (l > qr || r < ql || !pred(info[id])) {
+    int findFirst(int x, int y, int p, int l, int r, F &&pred) {
+        if (l >= y || r <= x || !pred(info[p])) {
             return -1;
         }
-        if (l == r) {
-            return id;
+        if (r - l == 1) {
+            return l;
         }
-        push(id);
         int m = (l + r) / 2;
-        int res = find_first(ql, qr, id * 2, l, m, pred);
-        if (res == -1) {
-            res = find_first(ql, qr, id * 2 + 1, m + 1, r, pred);
+        int ans = findFirst(x, y, p * 2, l, m, pred);
+        if (ans == -1) {
+            ans = findFirst(x, y, p * 2 + 1, m, r, pred);
         }
-        return res;
+        return ans;
     }
 
     template <class F>
-    int find_last(int ql, int qr, F &&pred) {
-        return find_last(ql, qr, 1, 1, n, pred);
+    int findLast(int l, int r, F &&pred) {
+        return findLast(l, r, 1, 0, n, pred);
     }
     template <class F>
-    int find_last(int ql, int qr, int id, int l, int r, F &&pred) {
-        if (l > qr || r < ql || !pred(info[id])) {
+    int findLast(int x, int y, int p, int l, int r, F &&pred) {
+        if (l >= y || r <= x || !pred(info[p])) {
             return -1;
         }
-        if (l == r) {
-            return id;
+        if (r - l == 1) {
+            return l;
         }
-        push(id);
         int m = (l + r) / 2;
-        int res = find_last(ql, qr, id * 2 + 1, m + 1, r, pred);
+        int res = findLast(x, y, p * 2 + 1, m, r, pred);
         if (res == -1) {
-            res = find_last(ql, qr, id * 2, l, m, pred);
+            res = findLast(x, y, p * 2, l, m, pred);
         }
         return res;
-    }
-
-private:
-    int n, size, log;
-    std::vector<Info> info;
-    std::vector<Tag> tag;
-    unsigned int bit_ceil(unsigned int n) {
-        unsigned int x = 1;
-        while (x < (unsigned int)(n)) {
-            x *= 2;
-        }
-        return x;
-    }
-    void update(int id) { info[id] = info[id * 2] + info[id * 2 + 1]; }
-    void apply(int id, const Tag &t) {
-        info[id].apply(t);
-        tag[id].apply(t);
-    }
-    void push(int id) {
-        apply(id * 2, tag[id]);
-        apply(id * 2 + 1, tag[id]);
-        tag[id] = Tag();
     }
 };
 
@@ -2022,5 +2121,5 @@ struct Poly {
         return ans.modxk(m);
     }
 };
-]], {}, {delimiters = "@$"})),
+]], {}, { delimiters = "@$" })),
 }
