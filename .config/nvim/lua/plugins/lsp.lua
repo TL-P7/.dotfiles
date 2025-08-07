@@ -139,14 +139,27 @@ return {
             filetypes = { 'html', 'htmldjango' }
           })
           lspconfig['cssls'].setup({})
-          -- lspconfig['kotlin_language_server'].setup({
-          --   cmd = { 'kotlin-language-server' },
-          --   filetypes = { 'kotlin' },
-          --   root_dir = function(fname)
-          --     return lspconfig.util.root_pattern('settings.gradle.kts', 'build.gradle.kts', 'pom.xml')(fname) or
-          --         vim.fs.dirname(vim.fs.find('.git', { path = fname, upward = true })[1]) or vim.fs.dirname(fname)
-          --   end
-          -- })
+          lspconfig['kotlin_language_server'].setup({
+            -- cmd = { 'kotlin-language-server' },
+            -- filetypes = { 'kotlin' },
+            -- root_dir = function(fname)
+            --   local root_files = {
+            --     'settings.gradle',     -- Gradle (multi-project)
+            --     'settings.gradle.kts', -- Gradle (multi-project)
+            --     'build.xml',           -- Ant
+            --     'pom.xml',             -- Maven
+            --     'build.gradle',        -- Gradle
+            --     'build.gradle.kts',    -- Gradle
+            --   }
+            --   return require('lspconfig.util').root_pattern(unpack(root_files)) or
+            --       vim.fs.dirname(vim.fs.find('.git', { path = fname, upward = true })[1]) or vim.fs.dirname(fname)
+            -- end
+          })
+          lspconfig['rust_analyzer'].setup({
+            diagnostics = {
+              enable = false
+            },
+          })
           lspconfig['markdown_oxide'].setup({})
           lspconfig['tinymist'].setup({
             -- offset_encoding = 'utf-8',
@@ -185,7 +198,7 @@ return {
               vim.keymap.set('n', '<space>wl', function()
                 print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
               end, opts)
-              if vim.bo.filetype == 'typst' then
+              if vim.bo.filetype == 'typst' or vim.bo.filetype == 'cpp' then
                 vim.keymap.set({ 'n', 'x' }, '<C-f>', function() vim.lsp.buf.format({ buf = 0 }) end, opts)
               else
                 vim.keymap.set({ 'n', 'x' }, '<C-f>', '<Cmd>Guard fmt<CR>', opts)
@@ -224,12 +237,13 @@ return {
     'nvimdev/guard.nvim',
     config = function()
       local ft = require('guard.filetype')
-      ft('c'):fmt('clang-format')
+      ft('c', 'cpp'):fmt('clang-format')
       ft('sh'):fmt({
         cmd = 'shfmt',
         args = { '-i', '4' },
       })
       ft('python'):fmt('ruff')
+      ft('rust'):fmt('rustfmt')
       ft('javascript,json,markdown,yaml'):fmt('prettier')
       ft('go'):fmt('gofumpt')
 
