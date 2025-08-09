@@ -239,22 +239,22 @@ struct DSU {
     int root(int x) { return f[x] == x ? x : f[x] = root(f[x]); }
 
     int merge(int x, int y) {
-        int rx = root(x), ry = root(y);
-        if (rx == ry) {
-            return rx;
+        x = root(x);
+        y = root(y);
+        if (x == y) {
+            return x;
         }
-        if (siz[rx] < siz[ry]) {
-            std::swap(rx, ry);
+        if (siz[x] < siz[y]) {
             std::swap(x, y);
         }
-        siz[rx] += siz[ry];
-        f[ry] = rx;
-        return rx;
+        siz[x] += siz[y];
+        f[y] = x;
+        return x;
     }
     bool same(int x, int y) { return root(x) == root(y); }
     int size(int x) { return siz[root(x)]; }
 };
-  ]], {}, { delimiters = "@$" })),
+]], {}, { delimiters = "@$" })),
 
   s("dsu_rollback", fmta([[
 struct DSU {
@@ -275,21 +275,22 @@ struct DSU {
     }
 
     int merge(int x, int y) {
-        int rx = root(x), ry = root(y);
-        if (rx == ry) {
-            return rx;
+        x = root(x);
+        y = root(y);
+        if (x == y) {
+            return x;
         }
-        if (siz[rx] < siz[ry]) {
-            std::swap(rx, ry);
+        if (siz[x] < siz[y]) {
+            std::swap(x, y);
             std::swap(x, y);
         }
 
-        his.push_back({siz[rx], siz[rx]});
-        his.push_back({f[ry], ry});
+        his.push_back({siz[x], siz[x]});
+        his.push_back({f[y], y});
 
-        siz[rx] += siz[ry];
-        f[ry] = rx;
-        return rx;
+        siz[x] += siz[y];
+        f[y] = x;
+        return x;
     }
     bool same(int x, int y) { return root(x) == root(y); }
     int size(int x) { return siz[root(x)]; }
@@ -1186,7 +1187,7 @@ struct Segtree {
     void update(int p) { info[p] = info[p * 2] + info[p * 2 + 1]; }
 
     Segtree() : n(0) {}
-    Segtree(int n_, Info v_ = Info()) : Segtree(n_, std::vector(n_, v_)) {}
+    Segtree(int n_, Info v_ = Info()) : Segtree(std::vector(n_, v_)) {}
 
     template <class T>
     Segtree(std::vector<T> a_) {
@@ -1311,7 +1312,7 @@ struct LazySegtree {
     }
     LazySegtree() : n(0) {}
     LazySegtree(int n_, Info v_ = Info())
-        : LazySegtree(n_, std::vector(n_, v_)) {}
+        : LazySegtree(std::vector(n_, v_)) {}
 
     template <class T>
     LazySegtree(std::vector<T> a_) : n(a_.size()) {
@@ -1466,9 +1467,8 @@ void sieve(int n) {
 }
   ]], {}, { delimiters = "@$" })),
   s("qpow", fmt([[
-template <class T>
-T qpow(T a, i64 b) {
-    T ans = 1;
+i64 qpow(i64 a, i64 b) {
+    i64 ans = 1;
     while (b) {
         if (b & 1) {
             ans *= a;
